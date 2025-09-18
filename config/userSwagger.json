@@ -1,0 +1,297 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "project name",
+        "description": "project description",
+        "version": "1.0"
+    },
+    "produces": ["application/json"],
+    "basePath": "/",
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "authorization",
+            "in": "header"
+        }
+    },
+    "paths": {
+        "/users/signUp": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-signUp-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "formData",
+                        "description": "Enter the name",
+                        "required": true,
+                        "type": "string",
+                        "value": "test"
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "Enter the email",
+                        "required": true,
+                        "type": "string",
+                        "value": "test@gmail.com"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "Enter password",
+                        "required": true,
+                        "type": "string",
+                        "value": "123456"
+                    },
+                    {
+                        "name": "deviceToken",
+                        "in": "formData",
+                        "description": "Enter deviceToken",
+                        "required": false,
+                        "type": "string",
+                        "value": ""
+                    },
+                    {
+                        "name": "deviceType",
+                        "in": "formData",
+                        "description": "Enter deviceType",
+                        "enum": [1,2],
+                        "required": false,
+                        "type": "number",
+                        "value": "1"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        
+        "/users/login": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-login-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "Enter the email",
+                        "required": true,
+                        "type": "string",
+                        "value": "test@gmail.com"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "Enter password",
+                        "required": true,
+                        "type": "string",
+                        "value": "123456"
+                    },
+                    {
+                        "name": "deviceToken",
+                        "in": "formData",
+                        "description": "Enter deviceToken",
+                        "required": false,
+                        "type": "string",
+                        "value": ""
+                    },
+                    {
+                        "name": "deviceType",
+                        "in": "formData",
+                        "description": "Enter deviceType",
+                        "enum": [1,2],
+                        "required": false,
+                        "type": "number",
+                        "value": "1"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+
+        "/users/updateProfile": {
+            "patch": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-updateProfile-post",
+                "tags": ["Application User"],
+                "description": "",
+                "security": [
+					{
+						"Bearer": []
+					}
+				],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "formData",
+                        "description": "Enter the name",
+                        "required": false,
+                        "type": "string",
+                        "value": ""
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "Enter the email",
+                        "required": false,
+                        "type": "string",
+                        "value": ""
+                    }
+                ],
+                "responses": {}
+            }
+        },
+
+        "/users/logout": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-logout-post",
+                "tags": ["Application User"],
+                "description": "",
+                "security": [
+					{
+						"Bearer": []
+					}
+				],
+				"parameters": [
+					
+				],
+                "responses": {}
+            }
+        },
+
+        "/users/changePassword": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-changePassword-post",
+                "tags": ["Application User"],
+                "description": "",
+                "security": [
+					{
+						"Bearer": []
+					}
+				],
+                "parameters": [
+                    {
+                        "name": "currentPassword",
+                        "in": "formData",
+                        "description": "Enter the currentPassword",
+                        "required": true,
+                        "type": "string",
+                        "value": ""
+                    },
+                    {
+                        "name": "newPassword",
+                        "in": "formData",
+                        "description": "Enter newPassword ",
+                        "required": true,
+                        "type": "string",
+                        "value": ""
+                    }
+                ],
+                "responses": {}
+            }
+        },
+
+        "/users/forgotPassword": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-forgotPassword-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "Enter the email",
+                        "required": false,
+                        "type": "string",
+                        "value": ""
+                    }
+                ],
+                "responses": {}
+            }
+        },
+
+        "/users/sidIdGenerate": {
+            "get": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-otsidIdGeneratepSend-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                
+                ],
+                "responses": {}
+            }
+        },
+
+
+        "/users/otpSend": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-otpSend-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "phoneNumber",
+                        "in": "formData",
+                        "description": "Enter the phoneNumber",
+                        "required": false,
+                        "type": "string",
+                        "value": "1010101010"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+
+        "/users/otpVerify": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-otpVerify-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "otp",
+                        "in": "formData",
+                        "description": "Enter the otp",
+                        "required": false,
+                        "type": "string",
+                        "value": "1414"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+
+        "/users/resendOtp": {
+            "post": {
+                "x-swagger-router-controller": "middleware-name1",
+                "operationId": "users-resendOtp-post",
+                "tags": ["Application User"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "phoneNumber",
+                        "in": "formData",
+                        "description": "Enter the phoneNumber",
+                        "required": false,
+                        "type": "string",
+                        "value": "1010101010"
+                    }
+                ],
+                "responses": {}
+            }
+        }
+
+    },
+    "definitions": {
+    }
+}
