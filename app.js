@@ -78,7 +78,8 @@ app.use((err, req, res, next) => {
   res.render("error");
 });
 
+const HOST = "0.0.0.0";
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT,HOST, () => {
   console.log(`✅ Worker ${process.pid} running on port ${PORT}`);
 });
