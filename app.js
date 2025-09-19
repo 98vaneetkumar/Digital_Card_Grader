@@ -1,104 +1,84 @@
-const cluster = require("cluster");
-const os = require("os");
+require("dotenv").config();
 const express = require("express");
+const createError = require("http-errors");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const fileUpload = require("express-fileupload");
+const swaggerUi = require("swagger-ui-express");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
 
-if (cluster.isMaster) {
-  const numCPUs = os.cpus().length;
-  console.log(`Number of CPUs: ${numCPUs}`);
-  console.log(`Master ${process.pid} is running`);
-  console.log(`Forking ${numCPUs} workers...`);
+const indexRouter = require("./routes/index");
+const usersRouter = require("./routes/userRoute")();
+const { connectdb } = require("./dbConnection");
 
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
+const app = express();
+const PORT = process.env.PORT || 4000;
 
-  cluster.on("exit", (worker, code, signal) => {
-    console.log(`Worker ${worker.process.pid} died. Forking a new one...`);
-    cluster.fork();
-  });
-} else {
-  // Worker process
-  require("dotenv").config();
-  const createError = require("http-errors");
-  const path = require("path");
-  const cookieParser = require("cookie-parser");
-  const logger = require("morgan");
-  const fileUpload = require("express-fileupload");
-  const swaggerUi = require("swagger-ui-express");
-  const rateLimit = require("express-rate-limit");
-  const helmet = require("helmet");
+connectdb();
 
-  const indexRouter = require("./routes/index");
-  const usersRouter = require("./routes/userRoute")();
-  const { connectdb } = require("./dbConnection");
+// Set EJS as view engine
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-  const app = express();
-  const PORT = process.env.PORT || 4000;
+// Global Middlewares
+app.use(logger("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
-  connectdb();
+app.use(helmet()); // Security headers
 
-  // Set EJS as view engine
-  app.set("view engine", "ejs");
-  app.set("views", path.join(__dirname, "views"));
+// Rate Limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many requests from this IP, please try again later.",
+});
 
-  // Global Middlewares
-  app.use(logger("dev"));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
-  app.use(cookieParser());
-  app.use(express.static(path.join(__dirname, "public")));
+app.use(limiter); // Apply to all routes
 
-  app.use(helmet()); // Security headers
+// File Upload
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
-  // Rate Limiter
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: "Too many requests from this IP, please try again later.",
-  });
+// Swagger Docs
+const swaggerOptions = {
+  explorer: true,
+  swaggerOptions: {
+    urls: [
+      { url: "/user", name: "User API" },
+      { url: "/business", name: "Business API" },
+    ],
+  },
+};
 
-  app.use(limiter); // Apply to all routes
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(null, swaggerOptions));
 
-  // File Upload
-  app.use(
-    fileUpload({
-      useTempFiles: true,
-      tempFileDir: "/tmp/",
-    })
-  );
+// Routes
+app.use("/", indexRouter);
+app.use("/users", usersRouter);
 
-  // Swagger Docs
-  const swaggerOptions = {
-    explorer: true,
-    swaggerOptions: {
-      urls: [
-        { url: "/user", name: "User API" },
-        { url: "/business", name: "Business API" },
-      ],
-    },
-  };
+// 404 Handler
+app.use((req, res, next) => next(createError(404)));
 
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(null, swaggerOptions));
+// Error Handler
+app.use((err, req, res, next) => {
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
+  res.status(err.status || 500);
+  res.render("error");
+});
 
-  // Routes
-  app.use("/", indexRouter);
-  app.use("/users", usersRouter);
-
-  // 404 Handler
-  app.use((req, res, next) => next(createError(404)));
-
-  // Error Handler
-  app.use((err, req, res, next) => {
-    res.locals.message = err.message;
-    res.locals.error = req.app.get("env") === "development" ? err : {};
-    res.status(err.status || 500);
-    res.render("error");
-  });
-
-  // Start Server
-  app.listen(PORT, () => {
-    console.log(`✅ Worker ${process.pid} running on port ${PORT}`);
-  });
-}
+// Start Server
+app.listen(PORT, () => {
+  console.log(`✅ Worker ${process.pid} running on port ${PORT}`);
+});
