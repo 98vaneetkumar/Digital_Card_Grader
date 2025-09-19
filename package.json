@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A CLI tool to generate a Node.js project setup with MySQL, Sequelize, and authentication features.",
   "scripts": {
-    "start": "nodemon app.jsonwebtoken"
+    "start": "nodemon app.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
