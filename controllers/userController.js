@@ -374,11 +374,6 @@ module.exports = {
 
   otpVerify: async (req, res) => {
     try {
-      const { phone } = req.body; //"+911010101010"; // Replace with dynamic input
-      const OTP = "YOUR OTP"; // Replace with dynamic input
-      // const otpResponse = await otpManager.verifyOTP(phone, OTP);
-
-      // if (otpResponse.status === "approved") {
       if (req.body.otp == "1111") {
 
         await Models.userModel.update(
