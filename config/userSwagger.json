@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "project name",
+        "title": "Digital Card Grader API",
         "description": "Digital Card Grader",
         "version": "1.0"
     },
