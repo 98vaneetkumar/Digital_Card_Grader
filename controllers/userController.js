@@ -248,7 +248,7 @@ module.exports = {
 
       await Models.userModel.update(
         { password: hashedNewPassword },
-        { where: { email: req.user.email} }
+        { where: { email: req.body.email} }
       );
 
       return commonHelper.success(res, Response.success_msg.passwordUpdate);
