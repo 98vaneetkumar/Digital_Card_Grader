@@ -382,7 +382,10 @@ module.exports = {
         );
         return commonHelper.success(res, Response.success_msg.otpVerify);
       } else {
-        throw new Error("Invalid OTP");
+        return commonHelper.error(
+        res,
+        "Invalid OTP",
+      );
       }
     } catch (error) {
       console.error("Error while verifying the OTP:", error);
