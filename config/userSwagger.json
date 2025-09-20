@@ -322,12 +322,12 @@
         "description": "",
         "parameters": [
           {
-            "name": "phoneNumber",
+            "name": "email",
             "in": "formData",
-            "description": "Enter the phoneNumber",
+            "description": "Enter the email",
             "required": false,
             "type": "string",
-            "value": "1010101010"
+            "value": "test@gmail.com"
           }
         ],
         "responses": {}
