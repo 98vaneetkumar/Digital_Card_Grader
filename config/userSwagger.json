@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "title": "project name",
-        "description": "project description",
+        "description": "Digital Card Grader",
         "version": "1.0"
     },
     "produces": ["application/json"],
@@ -216,20 +216,6 @@
                 "responses": {}
             }
         },
-
-        "/users/sidIdGenerate": {
-            "get": {
-                "x-swagger-router-controller": "middleware-name1",
-                "operationId": "users-otsidIdGeneratepSend-post",
-                "tags": ["Application User"],
-                "description": "",
-                "parameters": [
-                
-                ],
-                "responses": {}
-            }
-        },
-
 
         "/users/otpSend": {
             "post": {
