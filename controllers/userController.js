@@ -137,7 +137,7 @@ module.exports = {
         user,
         resetUrl
       );
-      await transporter.sendMail(emailTamplate);
+      // await transporter.sendMail(emailTamplate);
       return commonHelper.success(res, Response.success_msg.passwordLink);
     } catch (error) {
       console.error("Forgot password error:", error);
