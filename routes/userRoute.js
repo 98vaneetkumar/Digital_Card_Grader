@@ -12,8 +12,10 @@ module.exports=function(){
     router.post('/forgotPassword', controller.userController.forgotPassword);
     router.get('/resetPassword', forgotPasswordVerify, controller.userController.resetPassword);
     router.post('/forgotChangePassword', controller.userController.forgotChangePassword);
+    router.post("/forgetPasswordOTPVerify", controller.userController.forgetPasswordOTPVerify);
+    router.post("/setNewPassword", controller.userController.setNewPassword);
     router.post('/changePassword', authentication, controller.userController.changePassword);
-    router.get('/sidIdGenerate', controller.userController.sidIdGenerate);
+    // router.get('/sidIdGenerate', controller.userController.sidIdGenerate);
     router.post('/otpSend', controller.userController.otpSend);
     router.post('/otpVerify', authentication, controller.userController.otpVerify);
     router.post('/resendOtp', controller.userController.resendOtp);

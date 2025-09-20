@@ -177,7 +177,7 @@ module.exports = {
 
       if (newPassword !== confirmPassword) {
         return commonHelper.failed(res, Response.failed_msg.pwdNoMatch);
-    }
+      }
 
       const user = await Models.userModel.findOne({
         where: { id: id },
@@ -209,7 +209,58 @@ module.exports = {
       );
     }
   },
+  forgetPasswordOTPVerify: async (req, res) => {
+    let user= await Models.userModel.findOne({
+      where: { email: req.body.email },
+    });
+    if (!user) {
+      return commonHelper.failed(res, Response.failed_msg.userNotFound);
+    }
+    if (req.body.otp == "1111") {
+      await Models.userModel.update(
+        { otpVerify: 1 },
+        { where: { email: req.body.email } }
+      );
+      return commonHelper.success(res, Response.success_msg.otpVerify);
+    } else {
+      return commonHelper.failed(res, "Invalid OTP");
+    }
+  },
+  setNewPassword: async (req, res) => {
+    try {
+      const schema = Joi.object().keys({
+        email: Joi.string().email().required(),
+        newPassword: Joi.string().required(),
+      });
+      let payload = await helper.validationJoi(req.body, schema);
 
+      const {email, newPassword } = payload;
+      const user = await Models.userModel.findOne({
+        where: { email: email },
+      });
+      if (!user) {
+        return commonHelper.failed(res, Response.failed_msg.userNotFound);
+      }
+      const hashedNewPassword = await commonHelper.bcryptData(
+        newPassword,
+        process.env.SALT
+      );
+
+      await Models.userModel.update(
+        { password: hashedNewPassword },
+        { where: { email: req.user.email} }
+      );
+
+      return commonHelper.success(res, Response.success_msg.passwordUpdate);
+    } catch (error) {
+      console.error("Error while changing password", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.chngPwdErr,
+        error.message
+      );
+    }
+  },
   logout: async (req, res) => {
     try {
       const schema = Joi.object().keys({
@@ -375,17 +426,13 @@ module.exports = {
   otpVerify: async (req, res) => {
     try {
       if (req.body.otp == "1111") {
-
         await Models.userModel.update(
           { otpVerify: 1 },
           { where: { id: req.user.id } }
         );
         return commonHelper.success(res, Response.success_msg.otpVerify);
       } else {
-        return commonHelper.failed(
-        res,
-        "Invalid OTP",
-      );
+        return commonHelper.failed(res, "Invalid OTP");
       }
     } catch (error) {
       console.error("Error while verifying the OTP:", error);
