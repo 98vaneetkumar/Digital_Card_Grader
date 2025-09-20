@@ -446,21 +446,20 @@ module.exports = {
 
   resendOtp: async (req, res) => {
     try {
-      const { phone } = req.body; //"+911010101010"; // Replace with dynamic input
       const userExist = await Models.userModel.findOne({
         where: {
-          phoneNumber: req.body.phone,
+          email: req.body.email,
         },
       });
 
       if (userExist) {
         // const otpResponse = await otpManager.sendOTP(phone);
-        console.log("OTP send status:", otpResponse);
+  
 
         return commonHelper.success(
           res,
           Response.success_msg.otpSend,
-          otpResponse
+          
         );
       } else {
         console.log("User not found");
