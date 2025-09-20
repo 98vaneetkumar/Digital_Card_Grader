@@ -1,48 +1,37 @@
 require("dotenv").config();
-const express = require("express");
 const createError = require("http-errors");
+const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const fileUpload = require("express-fileupload");
 const swaggerUi = require("swagger-ui-express");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
+const session = require("express-session");
+const flash = require("connect-flash");
+
+const HOST = "0.0.0.0";
+const PORT = process.env.PORT || 4000;
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/userRoute")();
-const { connectdb } = require("./dbConnection");
-
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-connectdb();
+// Connect to Database
+require("./dbConnection").connectdb();
 
-// Set EJS as view engine
+// View Engine Setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Global Middlewares
+// Middleware
 app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(helmet()); // Security headers
-
-// Rate Limiter
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: "Too many requests from this IP, please try again later.",
-});
-
-app.use(limiter); // Apply to all routes
-
-// File Upload
+// Enable file upload using express-fileupload
 app.use(
   fileUpload({
     useTempFiles: true,
@@ -50,27 +39,55 @@ app.use(
   })
 );
 
-// Swagger Docs
+// ✅ Session Middleware - Must be before `flash()`
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 365 * 1000 },
+  })
+);
+
+// Add this right after your session setup middleware
+app.use(function (req, res, next) {
+  res.locals.userSite_session = req.session.user || null;
+  next();
+});
+
+// ✅ Flash Middleware
+app.use(flash());
+
+// ✅ Set Flash Messages in `res.locals` - After `flash()`
+app.use((req, res, next) => {
+  res.locals.msg = req.flash("msg");
+  res.locals.error = req.flash("error");
+  next();
+});
+
+// Swagger Documentation Setup
 const swaggerOptions = {
   explorer: true,
   swaggerOptions: {
     urls: [
       { url: "/user", name: "User API" },
-      { url: "/business", name: "Business API" },
     ],
   },
 };
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(null, swaggerOptions));
 
 // Routes
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-// 404 Handler
-app.use((req, res, next) => next(createError(404)));
 
-// Error Handler
+
+// 404 Error Handler
+app.use((req, res, next) => {
+  next(createError(404));
+});
+
+// Global Error Handler
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
@@ -78,8 +95,7 @@ app.use((err, req, res, next) => {
   res.render("error");
 });
 
-const HOST = "0.0.0.0";
 // Start Server
-app.listen(PORT,HOST, () => {
-  console.log(`✅ Worker ${process.pid} running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
