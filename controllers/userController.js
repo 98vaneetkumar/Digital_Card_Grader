@@ -377,7 +377,6 @@ module.exports = {
       const { phone } = req.body; //"+911010101010"; // Replace with dynamic input
       const OTP = "YOUR OTP"; // Replace with dynamic input
       // const otpResponse = await otpManager.verifyOTP(phone, OTP);
-      console.log("OTP verify status:", otpResponse);
 
       // if (otpResponse.status === "approved") {
       if (req.body.otp == "1111") {
