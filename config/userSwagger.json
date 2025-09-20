@@ -243,6 +243,11 @@
                 "operationId": "users-otpVerify-post",
                 "tags": ["Application User"],
                 "description": "",
+                 "security": [
+					{
+						"Bearer": []
+					}
+				],
                 "parameters": [
                     {
                         "name": "otp",
