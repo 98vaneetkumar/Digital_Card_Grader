@@ -241,11 +241,6 @@
         "operationId": "users-forgetPasswordOTPVerify-post",
         "tags": ["Application User"],
         "description": "",
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
         "parameters": [
           {
             "name": "email",
@@ -273,11 +268,6 @@
                 "operationId": "users-setNewPassword-post",
                 "tags": ["Application User"],
                 "description": "",
-                "security": [
-					{
-						"Bearer": []
-					}
-				],
                 "parameters": [
                     {
                         "name": "email",
