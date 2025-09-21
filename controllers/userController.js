@@ -14,6 +14,23 @@ const commonHelper = require("../helpers/commonHelper.js");
 const helper = require("../helpers/validation.js");
 const Models = require("../models/index");
 const Response = require("../config/responses.js");
+const fs = require("fs");
+const path = require("path");
+
+const {
+  RekognitionClient,
+  DetectCustomLabelsCommand,
+} = require("@aws-sdk/client-rekognition");
+
+const rekognition = new RekognitionClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const MODEL_ARN = process.env.MODEL_ARN;
 
 module.exports = {
   signUp: async (req, res) => {
@@ -209,8 +226,9 @@ module.exports = {
       );
     }
   },
+
   forgetPasswordOTPVerify: async (req, res) => {
-    let user= await Models.userModel.findOne({
+    let user = await Models.userModel.findOne({
       where: { email: req.body.email },
     });
     if (!user) {
@@ -226,6 +244,7 @@ module.exports = {
       return commonHelper.failed(res, "Invalid OTP");
     }
   },
+
   setNewPassword: async (req, res) => {
     try {
       const schema = Joi.object().keys({
@@ -234,7 +253,7 @@ module.exports = {
       });
       let payload = await helper.validationJoi(req.body, schema);
 
-      const {email, newPassword } = payload;
+      const { email, newPassword } = payload;
       const user = await Models.userModel.findOne({
         where: { email: email },
       });
@@ -248,7 +267,7 @@ module.exports = {
 
       await Models.userModel.update(
         { password: hashedNewPassword },
-        { where: { email: req.body.email} }
+        { where: { email: req.body.email } }
       );
 
       return commonHelper.success(res, Response.success_msg.passwordUpdate);
@@ -261,6 +280,7 @@ module.exports = {
       );
     }
   },
+
   logout: async (req, res) => {
     try {
       const schema = Joi.object().keys({
@@ -454,13 +474,8 @@ module.exports = {
 
       if (userExist) {
         // const otpResponse = await otpManager.sendOTP(phone);
-  
 
-        return commonHelper.success(
-          res,
-          Response.success_msg.otpSend,
-          
-        );
+        return commonHelper.success(res, Response.success_msg.otpSend);
       } else {
         console.log("User not found");
 
@@ -473,6 +488,113 @@ module.exports = {
         Response.error_msg.otpResErr,
         error.message
       );
+    }
+  },
+
+  // =========== card grade recognition =============
+
+  uploadAndGrade: async (req, res) => {
+    try {
+      if (!req.files || !req.files.card) {
+        return res.status(400).json({ error: "No card image uploaded" });
+      }
+
+      // Save the file using your common helper
+      const savedFilePath = await commonHelper.fileUpload(req.files.card);
+      const absolutePath = path.join(__dirname, "..", "public", savedFilePath);
+
+      const imageBytes = fs.readFileSync(absolutePath);
+
+      const command = new DetectCustomLabelsCommand({
+        ProjectVersionArn: MODEL_ARN,
+        Image: { Bytes: imageBytes },
+      });
+
+      const detect = await rekognition.send(command);
+      console.log("Rekognition output:", detect);
+
+      // Handle NotACard or no labels
+      if (
+        !detect.CustomLabels ||
+        detect.CustomLabels.length === 0 ||
+        detect.CustomLabels.some((l) => l.Name === "NotACard")
+      ) {
+        return res.json({
+          type: "unknown",
+          message: "❌ Please upload Pokémon cards only.",
+        });
+      }
+
+      const VALID_GRADES = ["Mint", "Good", "Poor"];
+      const MIN_CONFIDENCE = 90;
+
+      const validLabel = detect.CustomLabels.filter(
+        (label) =>
+          VALID_GRADES.includes(label.Name) &&
+          label.Confidence >= MIN_CONFIDENCE
+      ).sort((a, b) => b.Confidence - a.Confidence)[0];
+
+      if (!validLabel) {
+        return res.json({
+          type: "unknown",
+          message: "❌ Please upload Pokémon cards only.",
+        });
+      }
+
+      const grade = validLabel.Name;
+
+      // Feature ranges
+      const FEATURE_RANGES = {
+        Mint: {
+          centering: [9, 10],
+          edges: [9, 10],
+          surface: [9, 10],
+          corners: [9, 10],
+        },
+        Good: {
+          centering: [6, 8],
+          edges: [6, 8],
+          surface: [6, 8],
+          corners: [6, 8],
+        },
+        Poor: {
+          centering: [2, 5],
+          edges: [2, 5],
+          surface: [2, 5],
+          corners: [2, 5],
+        },
+      };
+
+      function randomInRange([min, max]) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      const ranges = FEATURE_RANGES[grade];
+      const scores = {
+        centering: randomInRange(ranges.centering),
+        edges: randomInRange(ranges.edges),
+        surface: randomInRange(ranges.surface),
+        corners: randomInRange(ranges.corners),
+      };
+
+      const overall = Math.round(
+        (scores.centering + scores.edges + scores.surface + scores.corners) / 4
+      );
+
+      return res.json({
+        type: "pokemon",
+        grade,
+        scores,
+        overall,
+        rawLabels: detect.CustomLabels,
+        savedPath: savedFilePath, // For serving later
+      });
+    } catch (error) {
+      console.error("Error during grading:", error);
+      return res.status(500).json({
+        error: "Failed to process image.",
+        details: error.message,
+      });
     }
   },
 };

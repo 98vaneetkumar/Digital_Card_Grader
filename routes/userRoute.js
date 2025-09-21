@@ -20,6 +20,9 @@ module.exports=function(){
     router.post('/otpVerify', authentication, controller.userController.otpVerify);
     router.post('/resendOtp', controller.userController.resendOtp);
 
+    router.post('/uploadAndGrade', authentication, controller.userController.uploadAndGrade);
+
+
     return router
 }
 

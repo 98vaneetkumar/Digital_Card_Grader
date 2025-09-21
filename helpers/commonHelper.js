@@ -8,11 +8,11 @@ const emailTamplate = require("./emailTemplate/forgetPassword");
 module.exports = {
   success: async (res, message, body = {}) => {
     try {
-      return res.status(200).json({  
-        'success': true,
-        'code': 200,
-        'message': message,
-        'body': body
+      return res.status(200).json({
+        success: true,
+        code: 200,
+        message: message,
+        body: body,
       });
     } catch (error) {
       console.log(error);
@@ -22,12 +22,12 @@ module.exports = {
 
   failed: async (res, msg, body = {}) => {
     try {
-      return res.status(400).json({ 
-        'success': false,
-        'message': msg,
-        'code': 400,
-        'body': {}
-       });
+      return res.status(400).json({
+        success: false,
+        message: msg,
+        code: 400,
+        body: {},
+      });
     } catch (error) {
       console.log(error);
       throw error;
@@ -36,18 +36,18 @@ module.exports = {
 
   error: async (res, msg, body = {}) => {
     try {
-      return res.status(500).json({ 
-        'success': false,
-        'message': msg,
-        'code': 500,
-        'body': {}
+      return res.status(500).json({
+        success: false,
+        message: msg,
+        code: 500,
+        body: {},
       });
     } catch (error) {
       console.log(error);
       throw error;
     }
   },
-  
+
   fileUpload: async (file, folder = "images") => {
     try {
       if (!file || file.name === "") return null;
@@ -61,12 +61,15 @@ module.exports = {
       // Create the correct path by referencing 'public/images' folder
       const filePath = path.join(__dirname, "..", "public", folder, name);
 
-      // Move the file to the desired folder
-      file.mv(filePath, (err) => {
-        if (err) throw err;
+      // Wait until the file is actually moved
+      await new Promise((resolve, reject) => {
+        file.mv(filePath, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
       });
 
-      // Return the file path relative to the public folder (this will be accessible via URL)
+      // Return the file path relative to the public folder
       return `/images/${name}`;
     } catch (error) {
       console.error("Error during file upload:", error);
