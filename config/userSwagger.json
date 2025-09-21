@@ -325,7 +325,6 @@
         "responses": {}
       }
     },
-
     "/users/uploadAndGrade": {
       "post": {
         "x-swagger-router-controller": "middleware-name1",
@@ -347,6 +346,109 @@
             "format": "binary",
             "maxLength": 5242880,
             "allowedMimeTypes": ["image/jpeg", "image/png"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/saveImageData": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-saveImageData-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "imagePath",
+            "in": "formData",
+            "description": "Enter the imagePath",
+            "required": true,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "centering",
+            "in": "formData",
+            "description": "Enter the centering",
+            "required": true,
+            "type": "number",
+            "value": ""
+          },
+          {
+            "name": "edges",
+            "in": "formData",
+            "description": "Enter the edges",
+            "required": true,
+            "type": "number",
+            "value": ""
+          },
+          {
+            "name": "surface",
+            "in": "formData",
+            "description": "Enter the surface",
+            "required": true,
+            "type": "number",
+            "value": ""
+          },
+          {
+            "name": "corners",
+            "in": "formData",
+            "description": "Enter the corners",
+            "required": true,
+            "type": "number",
+            "value": ""
+          },
+          {
+            "name": "overall",
+            "in": "formData",
+            "description": "Enter the overall",
+            "required": false,
+            "type": "number",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/usersCards": {
+      "get": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-usersCards-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/users/cardDetails": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-cardDetails-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cardId",
+            "in": "formData",
+            "description": "Enter the cardId",
+            "required": true,
+            "type": "string",
+            "value": ""
           }
         ],
         "responses": {}

@@ -21,6 +21,9 @@ module.exports=function(){
     router.post('/resendOtp', controller.userController.resendOtp);
 
     router.post('/uploadAndGrade', authentication, controller.userController.uploadAndGrade);
+    router.post('/saveImageData', authentication, controller.userController.saveImageData);
+    router.get('/usersCards', authentication, controller.userController.usersCards);
+    router.post('/cardDetails', authentication, controller.userController.cardDetails);
 
 
     return router

@@ -577,15 +577,16 @@ module.exports = {
         corners: randomInRange(ranges.corners),
       };
 
-      const overall = Math.round(
-        (scores.centering + scores.edges + scores.surface + scores.corners) / 4
-      );
+      const overall =
+        (scores.centering + scores.edges + scores.surface + scores.corners) / 4;
+
+      const overallDecimal = Math.round(overall * 100) / 100;
 
       return res.json({
         type: "pokemon",
         grade,
         scores,
-        overall,
+        overall: overallDecimal,
         rawLabels: detect.CustomLabels,
         savedPath: savedFilePath, // For serving later
       });
@@ -595,6 +596,87 @@ module.exports = {
         error: "Failed to process image.",
         details: error.message,
       });
+    }
+  },
+
+  saveImageData: async (req, res) => {
+    try {
+      const { imagePath, centering, edges, surface, corners, overall } =
+        req.body;
+
+      if (!imagePath) {
+        return commonHelper.failed(res, "Image path is required");
+      }
+      const imageData = {
+        userId: req.user.id,
+        imagePath: imagePath,
+        centering: Number(centering),
+        edges: Number(edges),
+        surface: Number(surface),
+        corners: Number(corners),
+        overall: Number(overall),
+      };
+      const savedData = await Models.userCardsModel.create(imageData);
+      return commonHelper.success(
+        res,
+        "Image data saved successfully",
+        savedData
+      );
+    } catch (error) {
+      console.error("Error while saving image data:", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.svImgErr,
+        error.message
+      );
+    }
+  },
+
+  usersCards: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const cards = await Models.userCardsModel.findAll({
+        where: { userId },
+        order: [["createdAt", "DESC"]],
+        raw: true,
+      });
+      return commonHelper.success(
+        res,
+        "User cards fetched successfully",
+        cards
+      );
+    } catch (error) {
+      console.error("Error while fetching user cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user cards",
+        error.message
+      );
+    }
+  },
+
+  cardDetails: async (req, res) => {
+    try {
+      const cardId = req.body.cardId;
+      const card = await Models.userCardsModel.findOne({
+        where: { id: cardId },
+        raw: true,
+      });
+      if (!card) {
+        return commonHelper.failed(res, "Card not found");
+      }
+      return commonHelper.success(
+        res,
+        "Card details fetched successfully",
+        card
+      );
+    } catch (error) {
+      console.error("Error while fetching card details:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching card details",
+        error.message
+      );
     }
   },
 };
