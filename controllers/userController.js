@@ -496,7 +496,7 @@ module.exports = {
   uploadAndGrade: async (req, res) => {
     try {
       if (!req.files || !req.files.card) {
-        return res.status(400).json({ error: "No card image uploaded" });
+         return commonHelper.failed(res,"No card image uploaded.");
       }
 
       // Save the file using your common helper
@@ -519,10 +519,7 @@ module.exports = {
         detect.CustomLabels.length === 0 ||
         detect.CustomLabels.some((l) => l.Name === "NotACard")
       ) {
-        return res.json({
-          type: "unknown",
-          message: "❌ Please upload Pokémon cards only.",
-        });
+        return commonHelper.failed(res,"❌ Please upload Pokémon cards only.");
       }
 
       const VALID_GRADES = ["Mint", "Good", "Poor"];
@@ -535,10 +532,7 @@ module.exports = {
       ).sort((a, b) => b.Confidence - a.Confidence)[0];
 
       if (!validLabel) {
-        return res.json({
-          type: "unknown",
-          message: "❌ Please upload Pokémon cards only.",
-        });
+       return commonHelper.failed(res,"❌ Please upload Pokémon cards only.");
       }
 
       const grade = validLabel.Name;
@@ -581,21 +575,21 @@ module.exports = {
         (scores.centering + scores.edges + scores.surface + scores.corners) / 4;
 
       const overallDecimal = Math.round(overall * 100) / 100;
-
-      return res.json({
-        type: "pokemon",
+      let response={
         grade,
         scores,
         overall: overallDecimal,
         rawLabels: detect.CustomLabels,
-        savedPath: savedFilePath, // For serving later
-      });
+        savedPath: savedFilePath,
+      }
+    return commonHelper.success(res,Response.success_msg.fetchSuccess,response);
     } catch (error) {
       console.error("Error during grading:", error);
-      return res.status(500).json({
-        error: "Failed to process image.",
-        details: error.message,
-      });
+       return commonHelper.error(
+        res,
+        Response.error_msg.otpResErr,
+        error.message
+      );
     }
   },
 

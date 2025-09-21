@@ -18,6 +18,7 @@ var success_msg = {
   otpVerify: "Otp verified successfully",
 
   otpResend: "OTP resent successfully",
+  fetchSuccess:"Data fetched successfully",
 };
 
 var failed_msg = {
