@@ -62,12 +62,12 @@ module.exports = {
       let response = await Models.userModel.create(objToSave);
       const token = jwt.sign(
         {
-          id: response.id,
-          email: response.email,
+          id: response.dataValues.id,
+          email: response.dataValues.email,
         },
         secretKey
       );
-      response.token = token;
+      response.dataValues.token = token;
       return commonHelper.success(
         res,
         Response.success_msg.registered,
