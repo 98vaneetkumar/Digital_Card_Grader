@@ -503,7 +503,7 @@ module.exports = {
   uploadAndGrade: async (req, res) => {
     try {
       if (!req.files || !req.files.card) {
-         return commonHelper.failed(res,"No card image uploaded.");
+        return commonHelper.failed(res, "No card image uploaded.");
       }
 
       // Save the file using your common helper
@@ -526,7 +526,7 @@ module.exports = {
         detect.CustomLabels.length === 0 ||
         detect.CustomLabels.some((l) => l.Name === "NotACard")
       ) {
-        return commonHelper.failed(res,"❌ Please upload Pokémon cards only.");
+        return commonHelper.failed(res, "❌ Please upload Pokémon cards only.");
       }
 
       const VALID_GRADES = ["Mint", "Good", "Poor"];
@@ -539,7 +539,7 @@ module.exports = {
       ).sort((a, b) => b.Confidence - a.Confidence)[0];
 
       if (!validLabel) {
-       return commonHelper.failed(res,"❌ Please upload Pokémon cards only.");
+        return commonHelper.failed(res, "❌ Please upload Pokémon cards only.");
       }
 
       const grade = validLabel.Name;
@@ -582,17 +582,21 @@ module.exports = {
         (scores.centering + scores.edges + scores.surface + scores.corners) / 4;
 
       const overallDecimal = Math.round(overall * 100) / 100;
-      let response={
+      let response = {
         grade,
         scores,
         overall: overallDecimal,
         rawLabels: detect.CustomLabels,
         savedPath: savedFilePath,
-      }
-    return commonHelper.success(res,Response.success_msg.fetchSuccess,response);
+      };
+      return commonHelper.success(
+        res,
+        Response.success_msg.fetchSuccess,
+        response
+      );
     } catch (error) {
       console.error("Error during grading:", error);
-       return commonHelper.error(
+      return commonHelper.error(
         res,
         Response.error_msg.otpResErr,
         error.message
@@ -602,14 +606,26 @@ module.exports = {
 
   saveImageData: async (req, res) => {
     try {
-      const { imagePath, centering, edges, surface, corners, overall } =
-        req.body;
+      const {
+        cardName,
+        cardType,
+        additionalNotes,
+        imagePath,
+        centering,
+        edges,
+        surface,
+        corners,
+        overall,
+      } = req.body;
 
       if (!imagePath) {
         return commonHelper.failed(res, "Image path is required");
       }
       const imageData = {
         userId: req.user.id,
+        cardName: cardName || null,
+        cardType: cardType || 0,
+        additionalNotes: additionalNotes || null,
         imagePath: imagePath,
         centering: Number(centering),
         edges: Number(edges),

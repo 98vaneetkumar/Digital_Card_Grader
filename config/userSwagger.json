@@ -372,6 +372,31 @@
             "value": ""
           },
           {
+            "name": "cardName",
+            "in": "formData",
+            "description": "Enter the card name",
+            "required": false,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "cardType",
+            "in": "formData",
+            "description": "Enter the card type (0: pokemon card, 1: sports card)",
+            "enum": [0, 1],
+            "required": false,
+            "type": "number",
+            "value": "0"
+          },
+          {
+            "name": "additionalNotes",
+            "in": "formData",
+            "description": "Enter the additional notes",
+            "required": false,
+            "type": "string",
+            "value": ""
+          },
+          {
             "name": "centering",
             "in": "formData",
             "description": "Enter the centering",
