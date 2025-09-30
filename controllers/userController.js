@@ -510,6 +510,16 @@ module.exports = {
       const savedFilePath = await commonHelper.fileUpload(req.files.card);
       const absolutePath = path.join(__dirname, "..", "public", savedFilePath);
 
+      // ✅ Check file size before reading
+      const stats = fs.statSync(absolutePath);
+      if (stats.size > 15 * 1024 * 1024) {
+        return commonHelper.failed(
+          res,
+          "❌ Image too large. Please upload under 15MB."
+        );
+      }
+
+      // Now safe to read
       const imageBytes = fs.readFileSync(absolutePath);
 
       const command = new DetectCustomLabelsCommand({
