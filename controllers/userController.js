@@ -16,11 +16,17 @@ const Models = require("../models/index");
 const Response = require("../config/responses.js");
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
 
 const {
   RekognitionClient,
   DetectCustomLabelsCommand,
 } = require("@aws-sdk/client-rekognition");
+
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { v4: uuid } = require("uuid");
+
+const s3 = new S3Client({ region: process.env.AWS_REGION });
 
 const rekognition = new RekognitionClient({
   region: process.env.AWS_REGION,
@@ -506,31 +512,58 @@ module.exports = {
         return commonHelper.failed(res, "No card image uploaded.");
       }
 
-      // Save the file using your common helper
-      const savedFilePath = await commonHelper.fileUpload(req.files.card);
-      const absolutePath = path.join(__dirname, "..", "public", savedFilePath);
+      const file = req.files.card;
 
-      // ✅ Check file size before reading
-      const stats = fs.statSync(absolutePath);
-      if (stats.size > 15 * 1024 * 1024) {
-        return commonHelper.failed(
-          res,
-          "❌ Image too large. Please upload under 15MB."
-        );
+      // 1️⃣ Read from temp file
+      const imageBufferOriginal = fs.readFileSync(file.tempFilePath);
+
+      // 2️⃣ Validate MIME type and convert if needed
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+      let imageBuffer = imageBufferOriginal;
+      let contentType = file.mimetype;
+
+      if (!allowedTypes.includes(file.mimetype)) {
+        // Convert any unsupported format (HEIC, WebP, etc.) to JPEG
+        imageBuffer = await sharp(imageBufferOriginal)
+          .jpeg({ quality: 95 })
+          .toBuffer();
+        contentType = "image/jpeg";
+      } else if (file.mimetype !== "image/jpeg") {
+        // Normalize JPEGs to baseline JPEG
+        imageBuffer = await sharp(imageBufferOriginal)
+          .jpeg({ quality: 95 })
+          .toBuffer();
+        contentType = "image/jpeg";
       }
 
-      // Now safe to read
-      const imageBytes = fs.readFileSync(absolutePath);
+      // 3️⃣ Generate S3 key
+      const key = `cards/${Date.now()}-${uuid()}.jpg`;
 
+      // 4️⃣ Upload to S3
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.S3_BUCKET,
+          Key: key,
+          Body: imageBuffer,
+          ContentType: contentType,
+        })
+      );
+
+      // 5️⃣ Call Rekognition
       const command = new DetectCustomLabelsCommand({
         ProjectVersionArn: MODEL_ARN,
-        Image: { Bytes: imageBytes },
+        Image: {
+          S3Object: {
+            Bucket: process.env.S3_BUCKET,
+            Name: key,
+          },
+        },
       });
 
       const detect = await rekognition.send(command);
       console.log("Rekognition output:", detect);
 
-      // Handle NotACard or no labels
+      // 6️⃣ Validate labels
       if (
         !detect.CustomLabels ||
         detect.CustomLabels.length === 0 ||
@@ -554,7 +587,7 @@ module.exports = {
 
       const grade = validLabel.Name;
 
-      // Feature ranges
+      // 7️⃣ Feature ranges
       const FEATURE_RANGES = {
         Mint: {
           centering: [9, 10],
@@ -576,9 +609,8 @@ module.exports = {
         },
       };
 
-      function randomInRange([min, max]) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
+      const randomInRange = ([min, max]) =>
+        Math.floor(Math.random() * (max - min + 1)) + min;
 
       const ranges = FEATURE_RANGES[grade];
       const scores = {
@@ -588,17 +620,24 @@ module.exports = {
         corners: randomInRange(ranges.corners),
       };
 
-      const overall =
-        (scores.centering + scores.edges + scores.surface + scores.corners) / 4;
+      const overallDecimal =
+        Math.round(
+          ((scores.centering + scores.edges + scores.surface + scores.corners) /
+            4) *
+            100
+        ) / 100;
 
-      const overallDecimal = Math.round(overall * 100) / 100;
-      let response = {
+      // 8️⃣ Prepare response
+      const savedPath = `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+      const response = {
         grade,
         scores,
         overall: overallDecimal,
         rawLabels: detect.CustomLabels,
-        savedPath: savedFilePath,
+        savedPath,
       };
+
       return commonHelper.success(
         res,
         Response.success_msg.fetchSuccess,
