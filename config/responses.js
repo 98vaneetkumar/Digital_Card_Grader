@@ -67,6 +67,8 @@ var error_msg = {
   otpResErr: "Failed to resend OTP",
 
   svImgErr: "Error while saving the image and data",
+
+  uplImgErr: "Error while uploading the image",
 };
 
 module.exports = {

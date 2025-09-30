@@ -598,7 +598,7 @@ module.exports = {
       console.error("Error during grading:", error);
       return commonHelper.error(
         res,
-        Response.error_msg.otpResErr,
+        Response.error_msg.uplImgErr,
         error.message
       );
     }
