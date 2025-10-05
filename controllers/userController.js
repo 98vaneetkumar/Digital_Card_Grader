@@ -14,9 +14,10 @@ const commonHelper = require("../helpers/commonHelper.js");
 const helper = require("../helpers/validation.js");
 const Models = require("../models/index");
 const Response = require("../config/responses.js");
+const { gradeCard } = require("../utils/grading.js");
+const { loadPokemonCSV } = require("../utils/csvLoader.js");
 const fs = require("fs");
 const path = require("path");
-const sharp = require("sharp");
 
 const {
   RekognitionClient,
@@ -514,142 +515,41 @@ module.exports = {
 
       const file = req.files.card;
 
-      // 1️⃣ Read from temp file
-      const imageBufferOriginal = fs.readFileSync(file.tempFilePath);
+      // 1️⃣ Save uploaded file locally
+      const savedRelativePath = await commonHelper.fileUpload(file, "images");
+      if (!savedRelativePath) {
+        return commonHelper.failed(res, "Failed to save the uploaded card.");
+      }
+      const savedAbsolutePath = path.join(__dirname, "..", "public", savedRelativePath);
 
-      // 2️⃣ Validate MIME type and convert if needed
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-      let imageBuffer = imageBufferOriginal;
-      let contentType = file.mimetype;
+      // 2️⃣ LOAD POKEMON DATA CSV HERE
+      const csvPath = path.join(__dirname, "..", "data", "pokemon.csv"); // adjust path
+      const pokemonData = await loadPokemonCSV(csvPath);
 
-      if (!allowedTypes.includes(file.mimetype)) {
-        // Convert any unsupported format (HEIC, WebP, etc.) to JPEG
-        imageBuffer = await sharp(imageBufferOriginal)
-          .jpeg({ quality: 95 })
-          .toBuffer();
-        contentType = "image/jpeg";
-      } else if (file.mimetype !== "image/jpeg") {
-        // Normalize JPEGs to baseline JPEG
-        imageBuffer = await sharp(imageBufferOriginal)
-          .jpeg({ quality: 95 })
-          .toBuffer();
-        contentType = "image/jpeg";
+      // 3️⃣ GRADE CARD
+      const grading = await gradeCard(savedAbsolutePath, pokemonData);
+
+      if (grading.pokemon.Name === "Unknown") {
+        return commonHelper.failed(res, "❌ No Pokémon card detected in the image.");
       }
 
-      // 3️⃣ Generate S3 key
-      const key = `cards/${Date.now()}-${uuid()}.jpg`;
-
-      // 4️⃣ Upload to S3
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: process.env.S3_BUCKET,
-          Key: key,
-          Body: imageBuffer,
-          ContentType: contentType,
-        })
-      );
-
-      // 5️⃣ Call Rekognition
-      const command = new DetectCustomLabelsCommand({
-        ProjectVersionArn: MODEL_ARN,
-        Image: {
-          S3Object: {
-            Bucket: process.env.S3_BUCKET,
-            Name: key,
-          },
-        },
-      });
-
-      const detect = await rekognition.send(command);
-      console.log("Rekognition output:", detect);
-
-      // 6️⃣ Validate labels
-      if (
-        !detect.CustomLabels ||
-        detect.CustomLabels.length === 0 ||
-        detect.CustomLabels.some((l) => l.Name === "NotACard")
-      ) {
-        return commonHelper.failed(res, "❌ Please upload Pokémon cards only.");
-      }
-
-      const VALID_GRADES = ["Mint", "Good", "Poor"];
-      const MIN_CONFIDENCE = 90;
-
-      const validLabel = detect.CustomLabels.filter(
-        (label) =>
-          VALID_GRADES.includes(label.Name) &&
-          label.Confidence >= MIN_CONFIDENCE
-      ).sort((a, b) => b.Confidence - a.Confidence)[0];
-
-      if (!validLabel) {
-        return commonHelper.failed(res, "❌ Please upload Pokémon cards only.");
-      }
-
-      const grade = validLabel.Name;
-
-      // 7️⃣ Feature ranges
-      const FEATURE_RANGES = {
-        Mint: {
-          centering: [9, 10],
-          edges: [9, 10],
-          surface: [9, 10],
-          corners: [9, 10],
-        },
-        Good: {
-          centering: [6, 8],
-          edges: [6, 8],
-          surface: [6, 8],
-          corners: [6, 8],
-        },
-        Poor: {
-          centering: [2, 5],
-          edges: [2, 5],
-          surface: [2, 5],
-          corners: [2, 5],
-        },
-      };
-
-      const randomInRange = ([min, max]) =>
-        Math.floor(Math.random() * (max - min + 1)) + min;
-
-      const ranges = FEATURE_RANGES[grade];
-      const scores = {
-        centering: randomInRange(ranges.centering),
-        edges: randomInRange(ranges.edges),
-        surface: randomInRange(ranges.surface),
-        corners: randomInRange(ranges.corners),
-      };
-
-      const overallDecimal =
-        Math.round(
-          ((scores.centering + scores.edges + scores.surface + scores.corners) /
-            4) *
-            100
-        ) / 100;
-
-      // 8️⃣ Prepare response
-      const savedPath = `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-
+      // 4️⃣ Return response
       const response = {
-        grade,
-        scores,
-        overall: overallDecimal,
-        rawLabels: detect.CustomLabels,
-        savedPath,
+        scores: {
+          centering: parseFloat(grading.centering),
+          edges: parseFloat(grading.edges),
+          surface: parseFloat(grading.surface),
+          corners: parseFloat(grading.corners || 0),
+          overall: parseFloat(grading.overall),
+        },
+        pokemon: grading.pokemon,
+        savedPath: savedRelativePath,
       };
 
-      return commonHelper.success(
-        res,
-        Response.success_msg.fetchSuccess,
-        response
-      );
+      return commonHelper.success(res, Response.success_msg.fetchSuccess, response);
     } catch (error) {
       console.error("Error during grading:", error);
-      return commonHelper.error(
-        res,
-        Response.error_msg.uplImgErr,
-        error.message
-      );
+      return commonHelper.error(res, Response.error_msg.uplImgErr, error.message);
     }
   },
 
