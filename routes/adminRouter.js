@@ -68,8 +68,6 @@ module.exports = function () {
   router.post("/faq_update/:id", session, controller.adminController.faq_update);
   router.get("/faq_view/:id",session, controller.adminController.faq_view);
   
-  router.get("/test", controller.adminController.test);
-
   return router;
 };
 

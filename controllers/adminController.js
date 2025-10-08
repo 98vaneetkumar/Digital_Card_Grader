@@ -216,8 +216,6 @@ module.exports = {
     }
   },
 
-
-
   deleteCsv: async (req, res) => {
     try {
       const { id } = req.body; // or send file name from frontend instead
@@ -617,9 +615,18 @@ module.exports = {
       let data = await Models.userModel.findOne({
         where: { id: userId },
       });
+
+      let userCards = await Models.userCardsModel.findAll({
+        where: { userId: userId },
+        order: [["createdAt", "DESC"]],
+      });
+
+      console.log("User Cards:", userCards);
+
       res.render("admin/users/userView", {
         title: "Users",
         data,
+        userCards, // pass cards to template
         session: req.session.user,
         msg: req.flash("msg"),
         error: req.flash("error"),
@@ -809,24 +816,4 @@ module.exports = {
     }
   },
 
-  test: async (req, res) => {
-    try {
-      // let objtosave = {
-      //   dailyBreadId: "e3f45af0-7da4-4ee0-8f63-22eed4cc2dbf",
-      //   comment: "Nice",
-      //   commentBy: "0187477c-b6a9-4805-8602-a301c0a2204e",
-      // };
-      // const saved = await Models.dailyBreadCommentModel.create(objtosave);
-      let objtosave = {
-        senderId: "033d4d17-1d3c-426d-b7dc-a43048b80042",
-        message: "comment on  you post",
-        type: 2,
-        recevierId: "0187477c-b6a9-4805-8602-a301c0a2204e",
-      };
-      const saved = await Models.notificationModel.create(objtosave);
-      console.log(saved);
-    } catch (error) {
-      throw error;
-    }
-  },
 };
