@@ -1,0 +1,397 @@
+<head>
+  <script>
+    (function () {
+      let darkMode = localStorage.getItem("darkMode") === "enabled";
+      document.documentElement.classList.toggle("dark-mode", darkMode);
+      document.body.classList.toggle("dark-mode", darkMode);
+
+      // Pre-set the correct icon to avoid flickering
+      let iconClass = darkMode ? "fa-sun" : "fa-moon";
+      document.write(`<style>#themeIcon { display: none; }</style>`);
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("themeIcon").classList.add(iconClass);
+        document.getElementById("themeIcon").style.display = "inline-block";
+      });
+    })();
+  </script>
+  <style>
+    html.dark-mode {
+      background-color: #27293D !important;
+      color: #ffffff !important;
+    }
+  </style>
+</head>
+
+
+<body>
+  <nav
+    class="header-navbar navbar navbar-expand-lg align-items-center floating-nav navbar-light navbar-shadow container-xxl"
+    style="background: linear-gradient(to right, #1c1c1c, #2a2a2a)">
+
+    <div class="navbar-container d-flex content">
+      <div class="bookmark-wrapper d-flex align-items-center">
+        <ul class="nav navbar-nav d-xl-none">
+          <li class="nav-item">
+            <a class="nav-link menu-toggle" href="#"><i class="ficon" data-feather="menu"></i></a>
+          </li>
+        </ul>
+        <div class="user-nav d-sm-flex d-none">
+          <%= title%>
+        </div>
+      </div>
+
+      <ul class="nav navbar-nav align-items-center ms-auto">
+        <li class="nav-item">
+          <!-- Dark Mode Toggle Button -->
+          <button id="themeToggle" class="btn btn-sm btn-dark ms-2" data-tooltip="Turn on Dark Mode">
+            <i id="themeIcon" class="fas fa-moon"></i>
+          </button>
+
+          <span class="user-name fw-bolder">
+            <%= session?.first_name%>
+          </span>
+          <span class="user-status">Admin</span>
+        </li>
+
+        <li class="nav-item dropdown dropdown-user">
+          <a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="#" data-bs-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            <span class="avatar">
+              <%if(!session?.profilePicture) {%>
+                <img class="round" src="../../assets/images (1).jpeg" alt="avatar" height="40" width="40" />
+                <%}else{%>
+                  <img class="round" src="<%= session?.profilePicture%>" alt="avatar" height="40" width="40" />
+                  <%}%>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-user">
+            <a class="dropdown-item" href="/admin/csvList"><i class="me-50" data-feather="file"></i> Upload CSV</a>
+            <a class="dropdown-item" href="/admin/profile"><i class="me-50" data-feather="user"></i> Profile</a>
+            <a class="dropdown-item" href="/admin/change_password"><i class="me-50" data-feather="lock"></i> Reset
+              Password</a>
+            <a class="dropdown-item" onclick='logoutUser()'><i class="me-50" data-feather="power"></i> Logout</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <script>
+    function logoutUser(id) {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged Out!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, logout!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          $.ajax({
+            url: "/admin/logout",
+            method: "post",
+            data: { id: id },
+            success: function (res) {
+              if (res.success) {
+                Swal.fire({
+                  title: "Logged Out!",
+                  text: "You are logged out successfully",
+                  icon: "success",
+                  timer: 2000,
+                  timerProgressBar: true,
+                  showConfirmButton: false,
+                }).then(() => {
+                  window.location.href = "/admin/login";
+                });
+              }
+            },
+          });
+        }
+      });
+    }
+
+  </script>
+
+  <script>
+    (function () {
+      if (localStorage.getItem("darkMode") === "enabled") {
+        document.documentElement.classList.add("dark-mode");
+        document.body.classList.add("dark-mode");
+        updateThemeUI();
+      }
+    })();
+  </script>
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      updateThemeUI();
+
+      document.getElementById("themeToggle").addEventListener("click", function () {
+        if (document.documentElement.classList.contains("dark-mode")) {
+          disableDarkMode();
+        } else {
+          enableDarkMode();
+        }
+      });
+
+      function enableDarkMode() {
+        document.documentElement.classList.add("dark-mode");
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("darkMode", "enabled");
+        updateThemeUI();
+      }
+
+      function disableDarkMode() {
+        document.documentElement.classList.remove("dark-mode");
+        document.body.classList.remove("dark-mode");
+        localStorage.setItem("darkMode", "disabled");
+        updateThemeUI();
+      }
+
+      function updateThemeUI() {
+        let themeIcon = document.getElementById("themeIcon");
+        let themeToggle = document.getElementById("themeToggle");
+
+        if (localStorage.getItem("darkMode") === "enabled") {
+          document.documentElement.classList.add("dark-mode");
+          document.body.classList.add("dark-mode");
+          themeIcon.classList.replace("fa-moon", "fa-sun");
+          themeToggle.setAttribute("data-tooltip", "Turn on Light Mode");
+        } else {
+          document.documentElement.classList.remove("dark-mode");
+          document.body.classList.remove("dark-mode");
+          themeIcon.classList.replace("fa-sun", "fa-moon");
+          themeToggle.setAttribute("data-tooltip", "Turn on Dark Mode");
+        }
+      }
+
+    });
+  </script>
+
+
+<script>
+  function updateIconsForDarkMode() {
+  if (localStorage.getItem("darkMode") === "enabled") {
+    document.querySelectorAll(".dark-mode .nav-item.active i").forEach((icon) => {
+      icon.style.stroke = "black"; // For Feather icons
+      icon.style.color = "black"; // For FontAwesome icons
+    });
+  } else {
+    document.querySelectorAll(".nav-item.active i").forEach((icon) => {
+      icon.style.stroke = ""; // Reset to default
+      icon.style.color = "";
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", updateIconsForDarkMode);
+
+</script>
+
+
+
+
+
+  <style>
+    .dark-mode .btn-outline-primary {
+      border-color: #007bff !important;
+      color: #007bff !important;
+    }
+
+    .dark-mode .btn-outline-primary:hover {
+      background-color: #007bff !important;
+      color: white !important;
+    }
+
+    html.dark-mode,
+    body.dark-mode {
+      background-color: #27293D !important;
+      color: #ffffff !important;
+    }
+
+    .dark-mode {
+      background-color: #27293D !important;
+      color: #ffffff !important;
+    }
+
+    .dark-mode .dashboard-container,
+    .dark-mode .modal-content,
+    .dark-mode .card,
+    .dark-mode table,
+    .dark-mode .dropdown-menu,
+    .dark-mode .alert {
+      background-color: #1E1E2E !important;
+      color: white !important;
+      border: 1px solid #333 !important;
+    }
+
+    .dark-mode tbody tr {
+      background-color: #2A2A3A !important;
+    }
+
+    .dark-mode input,
+    .dark-mode textarea,
+    .dark-mode select {
+      background-color: #282838 !important;
+      color: white !important;
+      border: 1px solid #444 !important;
+    }
+
+    .dark-mode input::placeholder,
+    .dark-mode textarea::placeholder {
+      color: #bbb !important;
+    }
+
+    .dark-mode .input-group-text {
+      background-color: black !important;
+      color: white !important;
+      border: none !important;
+    }
+
+    .dark-mode .toggle-password {
+      background-color: #444 !important;
+      border-radius: 5px;
+      padding: 5px;
+    }
+
+    .dark-mode .toggle-password i {
+      color: white !important;
+    }
+
+    .dark-mode .swal2-popup {
+      background-color: #222 !important;
+      color: white !important;
+    }
+
+    .dark-mode .swal2-title,
+    .dark-mode .swal2-content {
+      color: white !important;
+    }
+
+    .dark-mode .swal2-confirm,
+    .dark-mode .swal2-cancel {
+      color: white !important;
+    }
+
+    .dark-mode .swal2-success {
+      border-color: #28a745 !important;
+    }
+
+    .dark-mode .swal2-success-line-tip,
+    .dark-mode .swal2-success-line-long {
+      background-color: #28a745 !important;
+    }
+
+    .dark-mode .swal2-success-ring {
+      border-color: #28a745 !important;
+    }
+
+    .dark-mode .swal2-success-circular-line-left,
+    .dark-mode .swal2-success-circular-line-right {
+      background-color: transparent !important;
+    }
+
+    #themeToggle {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      position: relative;
+      overflow: visible;
+    }
+
+    #themeToggle::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease-in-out, transform 0.2s ease-in-out;
+      pointer-events: none;
+    }
+
+    #themeToggle:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(5px);
+    }
+
+
+    .user-status {
+      color: white !important;
+    }
+
+    .dark-mode .btn {
+      background-color: #444 !important;
+      color: white !important;
+    }
+
+    .dark-mode .btn:hover {
+      background-color: #555 !important;
+    }
+
+    .dark-mode table {
+      background-color: #27293D !important;
+      color: white !important;
+    }
+
+    .dark-mode .table:not(.table-dark):not(.table-light) thead:not(.table-dark) th,
+    .dark-mode .table:not(.table-dark):not(.table-light) tfoot:not(.table-dark) th {
+      background-color: #333 !important;
+      color: white !important;
+    }
+
+    .dark-mode .modal-content {
+      background-color: #27293D !important;
+      color: white !important;
+    }
+
+    .dark-mode .dropdown-item {
+      color: white !important;
+    }
+
+    .dark-mode .dropdown-item:hover {
+      background-color: #444 !important;
+    }
+
+    .dark-mode ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .dark-mode ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 10px;
+    }
+
+    .dark-mode ::-webkit-scrollbar-track {
+      background: #27293D;
+    }
+
+    .dark-mode * {
+      color: white !important;
+    }
+
+
+    /* .dark-mode .nav-item.active .menu-title {
+      color: black !important;
+    } */
+
+    .dark-mode .nav-item.active i {
+      color: white !important;
+      fill: white !important; /* This is for SVG icons */
+    }
+
+
+
+
+  </style>
+</body>

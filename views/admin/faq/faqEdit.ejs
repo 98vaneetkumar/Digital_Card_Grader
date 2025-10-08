@@ -1,0 +1,143 @@
+<!-- BEGIN: Head -->
+<%- include('../../common/header') %>
+<!-- BEGIN: Body -->
+<body
+  class="vertical-layout vertical-menu-modern navbar-floating footer-static"
+  data-open="click"
+  data-menu="vertical-menu-modern"
+  data-col=""
+>
+  <!-- Sidebar -->
+  <%- include('../../common/sidebar') %>
+  <!-- Navbar -->
+  <%- include('../../common/navbar') %>
+
+  <!-- BEGIN: Content -->
+  <div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper">
+      <div class="content-header row"></div>
+      <div class="content-body">
+        <div class="row justify-content-center">
+          <div class="content-header-left col-md-12 col-12 mb-2">
+            <div class="auth-wrapper auth-v1 px-2">
+              <div class="auth-inner py-2">
+                <!-- Add FAQ -->
+                <div class="card mb-0">
+                  <div class="card-body">
+                    <!-- Back Button -->
+                    <a href="/admin/faq_list" class="btn btn-primary">
+                      <i
+                        class="fas fa-arrow-left-long"
+                        style="font-size: 20px"
+                      ></i>
+                    </a>
+
+                    <!-- FAQ Form -->
+                    <form
+                      class="faq-form mt-2"
+                      enctype="multipart/form-data"
+                      method="POST"
+                      action="/admin/faq_update/<%= data.id %>"
+                    >
+                      <div class="mb-3">
+                        <label for="question" class="form-label"
+                          >Question</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="question"
+                          name="question"
+                          placeholder="Enter question"
+                          value="<%= data.question ? data.question : '' %>"
+                          required
+                        />
+                      </div>
+
+                      <div class="mb-3">
+                        <label for="answer" class="form-label">Answer</label>
+                        <textarea
+                          class="form-control"
+                          id="answer"
+                          name="answer"
+                          placeholder="FAQ answer"
+                          rows="3"
+                          required
+                        >
+<%= data.answer ? data.answer : '' %></textarea
+                        >
+                      </div>
+
+                      <div class="mb-3" style="text-align: right">
+                        <button
+                          type="submit"
+                          class="btn"
+                          style="
+                            background: linear-gradient(
+                              to right,
+                              #2a2a2a,
+                              #555
+                            );
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                          "
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END: Content -->
+
+  <%- include('../../common/script') %>
+
+  <script>
+    $(document).ready(function () {
+      jQuery.validator.addMethod("noSpace", function (value, element) {
+        return value == "" || value.trim().length != 0;
+      });
+
+      // Form validation rules
+      $("form").validate({
+        rules: {
+          question: {
+            required: true,
+            noSpace: true,
+            maxlength: 100,
+          },
+          answer: {
+            required: true,
+            maxlength: 1000,
+          },
+        },
+        messages: {
+          question: {
+            required: "Question is required.",
+            noSpace: "Spaces are not allowed.",
+            maxlength: "Question can be a maximum of 100 characters.",
+          },
+          answer: {
+            required: "Answer is required.",
+            maxlength: "Answer can be a maximum of 1000 characters.",
+          },
+        },
+        submitHandler: function (form) {
+          form.submit();
+        },
+      });
+    });
+  </script>
+</body>
+<!-- END: Body -->

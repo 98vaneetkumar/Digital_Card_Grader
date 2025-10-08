@@ -1,0 +1,279 @@
+
+  <!-- BEGIN: Head-->
+
+  <%- include('../common/header') %>
+  <style>
+    .profile label.error {
+      color: red;
+      font-size: 12px;
+      position: relative;
+      bottom: auto;
+    }
+  </style>
+
+  <!-- BEGIN: Body-->
+
+  <body
+    class="vertical-layout vertical-menu-modern navbar-floating footer-static"
+    data-open="click"
+    data-menu="vertical-menu-modern"
+    data-col=""
+  >
+    <!-- sidebar -->
+    <%- include('../common/sidebar') %>
+    <!-- navbar -->
+    <%- include('../common/navbar') %>
+    <!-- BEGIN: Content-->
+    <div class="app-content content">
+      <div class="content-overlay"></div>
+      <div class="header-navbar-shadow"></div>
+      <div class="content-wrapper container-xxl p-0">
+        <div class="content-body">
+          <div class="row justify-content-center">
+            <div class="col-md-10 mx-auto">
+              <div class="auth-wrapper auth-v1 px-2">
+                <div class="auth-inner py-2">
+                  <!-- Register v1 -->
+                  <div class="card mb-0">
+                    <div class="card-body profile">
+                      <a href="#" class="">
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                          "
+                        >
+                          <% if(session.profilePicture == null ||
+                          session.profilePicture == '' || session.profilePicture
+                          == undefined) { %>
+                          <img
+                            src="../../assets/images (1).jpeg"
+                            class="profile_img"
+                            alt="avatar"
+                            height="120px"
+                            width="120px"
+                            style="align-items: center"
+                          />
+                          <% } else { %>
+                          <img
+                            src="<%= session.profilePicture %>"
+                            class="profile_img"
+                            alt="admin image"
+                            height="120px"
+                            width="120px"
+                          />
+                          <% } %>
+                        </div>
+                      </a>
+
+                      <form
+                        class="auth-register-form mt-2"
+                        action="/admin/profile_update/<%= session.id %>"
+                        method="POST"
+                        enctype="multipart/form-data"
+                      >
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="mb-1">
+                              <label for="name" class="form-label"
+                                >First Name</label
+                              >
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="name"
+                                name="name"
+                                aria-describedby="name"
+                                value="<%= session.name %>"
+                              />
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="mb-1">
+                              <label for="email" class="form-label"
+                                >Email</label
+                              >
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="email"
+                                name="email"
+                                value="<%= session.email %>"
+                                disabled
+                              />
+                            </div>
+                          </div>
+
+                          <div class="mb-1">
+                            <label for="profilePicture" class="form-label"
+                              >Profile Picture</label
+                            >
+                            <input
+                              class="form-control"
+                              type="file"
+                              id="profilePicture"
+                              name="profilePicture"
+                              accept="image/*"
+                            />
+
+                            <!-- Image preview container -->
+                            <div
+                              id="imagePreviewContainer"
+                              style="
+                                position: relative;
+                                display: none;
+                                margin-top: 10px;
+                              "
+                            >
+                              <img
+                                id="imagePreview"
+                                src=""
+                                alt="Selected Image"
+                                style="max-width: 150px; border-radius: 5px"
+                              />
+
+                              <!-- "X" button inside the image preview -->
+                              <button
+                                id="removeImage"
+                                type="button"
+                                style="
+                                  position: absolute;
+                                  top: 5px;
+                                  left: 5px;
+                                  background: rgba(255, 0, 0, 0.8);
+                                  color: white;
+                                  border: none;
+                                  border-radius: 50%;
+                                  width: 24px;
+                                  height: 24px;
+                                  cursor: pointer;
+                                  font-size: 16px;
+                                  line-height: 24px;
+                                  text-align: center;
+                                  display: flex;
+                                  justify-content: center;
+                                  align-items: center;
+                                  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+                                "
+                              >
+                                ✖
+                              </button>
+                            </div>
+                          </div>
+
+                          <div class="col-md-7 mx-auto mt-0">
+                            <button class="btn btn-primary w-100" tabindex="5">
+                              Update Profile
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- /Register v1 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: Content-->
+
+    <%- include('../common/script') %>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"
+      integrity="sha512-WMEKGZ7L5LWgaPeJtw9MBM4i5w5OSBlSjTjCtSnvFJGSVD26gE5+Td12qN5pvWXhuWaWcVwF++F7aqu9cvqP0A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <script>
+      $(document).ready(function () {
+        function isSpecialCharacter(key) {
+          var specialCharacters = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/;
+          return specialCharacters.test(key);
+        }
+
+        // Custom validation method for no special characters
+        $.validator.addMethod(
+          "noSpecialChars",
+          function (value, element) {
+            return this.optional(element) || /^[a-zA-Z0-9]*$/i.test(value);
+          },
+          "Special characters are not allowed"
+        );
+
+        // Listen for keypress events on the name fields
+        $(
+          ".auth-register-form input[name='name'], .auth-register-form input[name='lastName']"
+        ).keypress(function (event) {
+          var key = String.fromCharCode(event.which);
+          if (isSpecialCharacter(key)) {
+            event.preventDefault();
+          }
+        });
+
+        $(".auth-register-form").validate({
+          // Specify validation rules
+          rules: {
+            name: {
+              required: true,
+              minlength: 2,
+            },
+            email: {
+              required: true,
+              email: true,
+            },
+          },
+          // Specify validation error messages
+          messages: {
+            name: {
+              required: "Please enter your name",
+            },
+            email: {
+              required: "Please enter your email",
+              email: "Please enter a valid email address",
+            },
+          },
+        });
+      });
+    </script>
+
+    <script>
+      $(window).on("load", function () {
+        if (feather) {
+          feather.replace({
+            width: 14,
+            height: 14,
+          });
+        }
+      });
+    </script>
+
+    <script>
+      $(document).ready(function () {
+        $("#profilePicture").change(function (event) {
+          let input = event.target;
+          let file = input.files[0];
+
+          if (file) {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+              $("#imagePreview").attr("src", e.target.result);
+              $("#imagePreviewContainer").show(); // Show preview with "X" button
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Remove selected image when clicking the "X" button
+        $("#removeImage").click(function () {
+          $("#profilePicture").val(""); // Clear the file input
+          $("#imagePreviewContainer").hide(); // Hide the preview
+        });
+      });
+    </script>
+  </body>
+  <!-- END: Body-->

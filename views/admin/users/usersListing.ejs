@@ -1,0 +1,196 @@
+
+<!-- BEGIN: Head-->
+
+<%-include('../../common/header')%>
+<!-- END: Head-->
+
+<!-- BEGIN: Body-->
+
+<body class="vertical-layout vertical-menu-modern navbar-floating footer-static" data-open="click" data-menu="vertical-menu-modern" data-col="">
+  <!-- BEGIN: Header-->
+  <%-include('../../common/navbar')%>
+
+  <!-- END: Header-->
+
+  <!-- BEGIN: Main Menu-->
+  <%-include('../../common/sidebar')%>
+  <!-- END: Main Menu-->
+
+  <!-- BEGIN: Content-->
+  <div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-xxl p-0">
+
+    </div>
+    <div class="content-body">
+      <!-- Basic Tables start -->
+      <div class="row" id="basic-table">
+        <div class="col-12">
+          <div class="card card-body">
+
+            <div class="table-responsive">
+              <table class="table" id="myTable">
+                <thead>
+                  <tr>
+                    <th>Sr.no</th>
+                    <th>Name</th>
+                    <!-- <th>Image</th> -->
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% user_data.forEach((data,i)=>{%>
+                  <tr>
+                    <td><%= i+1%></td>
+                    <td><%= data.name ? data.name:"N/A"%></td>
+                    <!-- <td>
+                      <% if (!data.profilePicture) { %>
+                        <img src="/assets/images (1).jpeg" alt="dummy image" style="height:100px; width:100px;">
+                      <% } else { %>
+                        <img src="<%= data.profilePicture %>" alt="Profile Picture" style="height:100px; width:100px;">
+                      <% } %>
+                    </td>                     -->
+                    <td><%= data.email ? data.email:"N/A"%>
+                    </td>
+                    <% if(data.status== 1){ %>
+                    <td><i class="btn btn-outline-success btn-sm " onclick="changeStatus('<%=data.id%>','0')">Active</i>
+                    </td>
+                    <% } else { %>
+                    <td><i class="btn btn-outline-danger btn-sm " onclick="changeStatus('<%=data.id%>','1')">Inactive</i>
+                    </td>
+                    <% } %>
+
+
+
+                    <td><a href="/admin/user_view/<%=data.id%>" class="btn btn-outline-primary btn-sm"> <i class="ph ph-eye"></i>
+                      </a>
+                      <button onclick="deleteUsers('<%=data.id%>')" class="btn btn-outline-danger btn-sm"><i class="ph ph-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+
+                  <%})%>
+                </tbody>
+
+
+
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Basic Tables end -->
+    </div>
+  </div>
+  </div>
+  <!-- END: Content-->
+
+  <div class="sidenav-overlay"></div>
+  <div class="drag-target"></div>
+
+  <!-- BEGIN: Footer-->
+  <%-include('../../common/footer')%>
+  <!-- END: Footer-->
+
+  <%-include('../../common/script')%>
+
+  <script>
+    $(window).on("load", function() {
+      if (feather) {
+        feather.replace({
+          width: 14,
+          height: 14,
+        });
+      }
+    });
+  </script>
+  <script>
+    changeStatus = (id, status) => {
+      $.ajax({
+        url: "/admin/user_status",
+        method: "post",
+        data: {
+          id: id,
+          status: status
+        },
+        success: function(res) {
+      if (res.success) {
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: res.message,
+          showConfirmButton: false,
+          timer: 3000,
+          toast: true
+        });
+
+        // Update button text & class dynamically
+        let btn = $(`i[onclick="changeStatus('${id}','${status}')"]`);
+        if (status == "1") {
+          btn.removeClass("btn-outline-danger").addClass("btn-outline-success").text("Active");
+          btn.attr("onclick", `changeStatus('${id}','0')`);
+        } else {
+          btn.removeClass("btn-outline-success").addClass("btn-outline-danger").text("Inactive");
+          btn.attr("onclick", `changeStatus('${id}','1')`);
+        }
+      }
+    }
+ 
+      })
+    }
+
+    function deleteUsers(id) {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: "/admin/user_delete",
+          method: "post",
+          data: { id: id },
+          success: function (res) {
+            if (res) {
+              Swal.fire({
+                title: "Deleted!",
+                text: "User has been deleted successfully.",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              window.location.reload();
+
+              // setTimeout(() => {
+              //     $(`#users-row-${id}`).remove();
+              //     $("#myTable tbody tr").each(function (index) {
+              //       $(this)
+              //         .find("td:first")
+              //         .text(index + 1);
+              //     });
+              //   }, 2000);
+            }
+          },
+        });
+      }
+  });
+}
+
+  </script>
+</body>
+<!-- END: Body-->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+<script>
+  $(document).ready(function() {
+    $("#myTable").DataTable();
+  });
+</script>
+

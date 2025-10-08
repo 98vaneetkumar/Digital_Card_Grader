@@ -1,0 +1,375 @@
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+<!-- BEGIN: Head-->
+<%-include('./common/header')%>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- END: Head-->
+
+  <!-- BEGIN: Body-->
+
+  <body class="vertical-layout vertical-menu-modern  navbar-floating footer-static  " data-open="click"
+    data-menu="vertical-menu-modern" data-col="">
+
+    <!-- BEGIN: Header-->
+    <%-include('./common/navbar')%>
+
+      <!-- END: Header-->
+
+
+      <!-- BEGIN: Main Menu-->
+      <%-include('./common/sidebar')%>
+        <!-- END: Main Menu-->
+        <% const currentYear = new Date().getFullYear(); %>
+
+
+        <!-- BEGIN: Content-->
+        <div class="app-content content ">
+          <div class="content-overlay"></div>
+          <div class="header-navbar-shadow"></div>
+          <div class="content-wrapper container-xxl p-0">
+            <div class="content-header row">
+            </div>
+            <div class="content-body">
+              <!-- Dashboard Ecommerce Starts -->
+              <section id="dashboard-ecommerce">
+                <div class="row match-height">
+
+
+                  <!-- Statistics Card -->
+                  <div class="col-xl-12 col-md-12 col-12">
+                    <div class="card card-statistics">
+                      <div class="">
+
+                      </div>
+                      <div class="card-body statistics-body">
+                        <div class="row">
+
+                          <!-- Users -->
+                          <div class="col-xl-3 col-sm-6 col-12 mb-2 mb-xl-0">
+                            <a href="/admin/users_listing">
+                              <div class="d-flex flex-row">
+                                <div class="avatar bg-light-primary me-2">
+                                  <div class="avatar-content">
+                                    <i class="fas fa-users text-white"></i>
+                                  </div>
+                                </div>
+                                <div class="my-auto text-white">
+                                  <h4 class="fw-bolder mb-0 text-white"><%- user %></h4>
+                                  <p class="card-text font-small-3 mb-0">Users</p>
+                                </div>
+                              </div>
+                            </a>
+                          </div>
+              
+              </div>
+              </div>
+
+              </div>
+              </div>
+              </div>
+
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card p-4">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="text-grey mb-0">Users Growth</h5>
+                        <div class="form-group m-0" style="width: 120px">
+                          <select class="form-select year-select" data-chart="users">
+                            <% for(let year=Math.max(2025, currentYear); year>= 2024; year--) { %>
+                              <option value="<%= year %>" <%=year===currentYear ? 'selected' : '' %>><%= year %>
+                              </option>
+                              <% } %>
+                          </select>
+
+                        </div>
+                      </div>
+                      <div id="usersChart"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                  document.addEventListener("DOMContentLoaded", function () {
+                    const currentYear = new Date().getFullYear();
+
+                      // Create modal HTML
+                      const modalHTML = `
+                        <div id="yearHelpModal" class="modal fade" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header border-0">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body text-center">
+                                <h5 class="modal-title fw-bold">Year Filter Guide</h5>
+                                <p class="mb-3">The current year is set to <strong>${currentYear}</strong>. Here’s how it works:</p>
+                                <ul class="list-unstyled">
+                                  <li class="mb-2">✔️ Your current year updates automatically.</li>
+                                  <li class="mb-2">📅 Previous years are available for analysis.</li>
+                                  <li>🔄 You can switch between years to view records.</li>
+                                </ul>
+                              </div>
+                              <div class="modal-footer border-0 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                  <input type="checkbox" id="showGuideAgain" class="form-check-input me-2">
+                                  <label for="showGuideAgain" class="form-check-label">Don't show again</label>
+                                </div>
+                                <button type="button" class="btn btn-gradient" id="confirmYearHelp">Got it!</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      `;
+
+                      // Append modal to body
+                      document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+                      // Initialize modal
+                      const yearHelpModal = new bootstrap.Modal(document.getElementById("yearHelpModal"), {
+                        backdrop: "static",
+                        keyboard: false 
+                      });
+                      const showGuideAgain = document.getElementById("showGuideAgain");
+                      const confirmButton = document.getElementById("confirmYearHelp");
+
+                      // Show modal when clicking on the select filter
+                      document.querySelectorAll(".year-select").forEach(select => {
+                        select.addEventListener("click", function (event) {
+                          if (!localStorage.getItem("yearSelectorHelpSeen")) {
+                            event.preventDefault(); // Prevent default dropdown behavior
+                            this.blur(); // Blur the dropdown to prevent it from opening
+                            setTimeout(() => yearHelpModal.show(), 100); // Delay to ensure dropdown is not visible
+                          }
+                        });
+                      });
+
+                      // Handle modal confirmation
+                      confirmButton.addEventListener("click", () => {
+                        if (showGuideAgain.checked) {
+                          localStorage.setItem("yearSelectorHelpSeen", "true");
+                        }
+                        yearHelpModal.hide();
+                      });
+
+                      // Apply custom styles
+                      const modalStyles = `
+                        .modal-content {
+                          background: rgba(40, 48, 70, 0.95);
+                          backdrop-filter: blur(10px);
+                          border-radius: 12px;
+                          color: #fff;
+                          border: none;
+                        }
+                        .modal-header {
+                          padding: 6px 24px;
+                          border-bottom: none;
+                        }
+                        .modal-title {
+                          color: #fff !important; /* Ensure white title in both modes */
+                        }
+                        .modal-footer {
+                          padding: 16px 24px;
+                          border-top: none;
+                        }
+                        .btn-close {
+                          filter: invert(1) grayscale(100%) brightness(200%);
+                        }
+                        .btn-gradient {
+                          background: linear-gradient(to right, #1c1c1c, #2a2a2a);
+                          border: none;
+                          padding: 10px 16px;
+                          color: white;
+                          font-weight: 600;
+                          border-radius: 8px;
+                          transition: all 0.3s ease-in-out;
+                        }
+                        
+                        .btn-gradient:hover {
+                          color: white !important;
+                        }
+
+                        .modal-body {
+                          font-size: 16px;
+                          padding: 24px;
+                        }
+                        ul {
+                          text-align: left;
+                          padding: 0;
+                        }
+                        ul li {
+                          font-size: 15px;
+                          display: flex;
+                          align-items: center;
+                        }
+                        .form-check-input {
+                          accent-color: #667eea;
+                        }
+                      `;
+
+                      const styleSheet = document.createElement("style");
+                      styleSheet.textContent = modalStyles;
+                      document.head.appendChild(styleSheet);
+                    });
+
+                </script>
+                  
+                
+                
+
+              <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+              <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                  // Ensure ApexCharts is loaded
+                  if (typeof ApexCharts === "undefined") {
+                    console.error("ApexCharts is not loaded. Please check the script source.");
+                    return;
+                  }
+
+                  let charts = {};
+
+                  function createChartConfig(name, data, color) {
+                    return {
+                      chart: {
+                        height: 250,
+                        width: "100%",
+                        type: "area",
+                        animations: { easing: "easeout", speed: 800 },
+                        toolbar: { show: false },
+                        background: "transparent",
+                      },
+                      series: [{ name: name, data: data.values || [] }],
+                      colors: [color],
+                      xaxis: {
+                        categories: data.months || [],
+                        tickAmount: 5, // 👈 spacing between points
+                        labels: { style: { colors: "#fff", fontSize: "12px" } },
+                      },
+                      yaxis: {
+                        labels: { style: { colors: "#fff", fontSize: "12px" } },
+                      },
+                      stroke: {
+                        width: 3,
+                        curve: "smooth",
+                      },
+                      grid: {
+                        padding: {
+                          left: 10,
+                          right: 10,
+                        },
+                      },
+                      fill: {
+                        type: "gradient",
+                        gradient: {
+                          shadeIntensity: 1,
+                          opacityFrom: 0.6,
+                          opacityTo: 0.2,
+                          stops: [0, 90, 100],
+                        },
+                      },
+                      dataLabels: { enabled: false },
+                      tooltip: { theme: "dark" },
+                    };
+                  }
+
+                  function fetchChartData(chartType, year) {
+                    fetch(`/admin/getDashboardData?year=${year}&chartType=${chartType}`)
+                      .then((response) => response.json())
+                      .then((data) => {
+                        if (data.success) {
+                          updateChart(chartType, data.counts[chartType], data.months);
+                        } else {
+                          console.error("Error fetching data:", data.error);
+                        }
+                      })
+                      .catch((error) => console.error("Fetch error:", error));
+                  }
+
+                  function updateChart(chartType, values, months) {
+                    const chartId = `#${chartType}Chart`;
+
+                    if (charts[chartId]) {
+                      charts[chartId].updateSeries([{ data: values }]);
+                      charts[chartId].updateOptions({ xaxis: { categories: months } });
+                    }
+                  }
+
+                  try {
+                    const countsData = JSON.parse('<%- JSON.stringify(counts1 || {}) %>');
+                    const monthsData = JSON.parse('<%- JSON.stringify(months1 || []) %>').map(
+                      (month) => month.split(",")[0]
+                    );
+
+                    const chartConfigs = [
+                      { id: "#usersChart", name: "Users", color: "#1E90FF", type: "users" },
+                    ];
+
+                    chartConfigs.forEach((config) => {
+                      if (document.querySelector(config.id)) {
+                        let chartData = { months: monthsData, values: countsData[config.type] || [] };
+                        let options = createChartConfig(config.name, chartData, config.color);
+                        charts[config.id] = new ApexCharts(document.querySelector(config.id), options);
+                        charts[config.id].render();
+                      } else {
+                        console.warn(`Chart container ${config.id} not found.`);
+                      }
+                    });
+
+                    // Initialize year dropdown events
+                    document.querySelectorAll(".year-select").forEach((select) => {
+                      const chartType = select.dataset.chart;
+                      select.addEventListener("change", function () {
+                        fetchChartData(chartType, this.value);
+                      });
+                    });
+                  } catch (error) {
+                    console.error("Error parsing JSON data:", error);
+                  }
+                });
+              </script>
+
+
+            </div>
+            <!--/ Statistics Card -->
+          </div>
+
+
+        </div>
+        </section>
+        <!-- Dashboard Ecommerce ends -->
+
+        </div>
+        </div>
+        </div>
+        <!-- END: Content-->
+
+        <div class="sidenav-overlay"></div>
+        <div class="drag-target"></div>
+
+
+        </section>
+        <!-- Dashboard Ecommerce ends -->
+
+
+        <!-- END: Content-->
+
+        <div class="sidenav-overlay"></div>
+        <div class="drag-target"></div>
+        <!-- script -->
+        <%-include('./common/script')%>
+          <!-- BEGIN: Footer-->
+          <%-include('./common/footer')%>
+            <!-- END: Footer-->
+
+
+            <script>
+              $(window).on('load', function () {
+                if (feather) {
+                  feather.replace({
+                    width: 14,
+                    height: 14
+                  });
+                }
+              })
+            </script>

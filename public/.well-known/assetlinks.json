@@ -1,0 +1,16 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.live.edify",
+      "sha256_cert_fingerprints": [
+        "F4:BD:1B:97:10:C7:27:17:E9:78:B5:A3:D8:B5:0B:B9:3A:F5:B3:42:06:92:2A:C4:20:83:1F:AE:66:A0:4A:3A",
+        "3E:D3:4D:B3:EF:33:FA:AF:13:C6:E3:77:94:35:E3:84:E9:06:88:48:58:AA:43:AA:98:38:6E:4C:CA:1E:24:D9",
+        "1A:0B:8F:E0:EF:82:55:B6:E7:8D:59:5D:62:9C:74:34:93:E1:87:4E:AB:56:A2:08:71:C8:18:59:FD:CD:74:68"
+      ]
+    }
+  }
+]

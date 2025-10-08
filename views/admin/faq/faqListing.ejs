@@ -1,0 +1,183 @@
+<!-- BEGIN: Head-->
+<%- include('../../common/header') %>
+<!-- END: Head-->
+
+<!-- BEGIN: Body-->
+<body
+  class="vertical-layout vertical-menu-modern navbar-floating footer-static"
+  data-open="click"
+  data-menu="vertical-menu-modern"
+  data-col=""
+>
+  <!-- BEGIN: Header-->
+  <%- include('../../common/navbar') %>
+  <!-- END: Header-->
+
+  <!-- BEGIN: Main Menu-->
+  <%- include('../../common/sidebar') %>
+  <!-- END: Main Menu-->
+
+  <!-- BEGIN: Content-->
+  <div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-xxl p-0">
+      <div class="content-body">
+        <!-- FAQ List Section Start -->
+        <div class="row" id="faq-list">
+          <div class="col-12">
+            <div class="card card-body">
+              <!-- Add FAQ Button -->
+              <div class="d-flex justify-content-end mb-3">
+                <div style="max-width: 200px">
+                  <a
+                    href="/admin/add_faq"
+                    class="btn"
+                    style="
+                      background: linear-gradient(to right, #2a2a2a, #555);
+                      color: white;
+                      border: none;
+                      padding: 10px 20px;
+                      border-radius: 5px;
+                      float: right;
+                    "
+                  >
+                    <i class="fa fa-plus"></i> Add FAQ
+                  </a>
+                </div>
+              </div>
+
+              <!-- FAQ Table -->
+              <div class="table-responsive">
+                <table id="myTable" class="table table-md">
+                  <thead>
+                    <tr style="background-color: #f8f9fa">
+                      <th scope="col">S No.</th>
+                      <th scope="col">Question</th>
+                      <th scope="col">Answer</th>
+                      <th scope="col">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% faqData.forEach(function(data, i) { %>
+                    <tr id="faq-row-<%= data.id %>">
+                      <td><%= 1 + i %></td>
+                      <td><%= data.question %></td>
+                      <td>
+                        <div class="answer-text"><%= data.answer %></div>
+                      </td>
+
+                      <td>
+                        <a
+                          href="/admin/faq_view/<%=data.id%>"
+                          class="btn btn-outline-primary btn-sm"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </a>
+                        <a
+                          href="/admin/faq_edit/<%=data.id%>"
+                          class="btn btn-outline-warning btn-sm"
+                        >
+                          <i class="ph ph-pencil"></i>
+                        </a>
+                        <button
+                          onclick="deleteUsers('<%= data.id %>')"
+                          class="btn btn-outline-danger btn-sm"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- FAQ List Section End -->
+      </div>
+    </div>
+  </div>
+  <!-- END: Content-->
+
+  <!-- BEGIN: Footer-->
+  <%- include('../../common/footer') %>
+  <!-- END: Footer-->
+
+  <%- include('../../common/script') %>
+
+  <style>
+    .answer-text {
+      display: -webkit-box;
+      display: box;
+      -webkit-line-clamp: 5;
+      line-clamp: 5;
+      -webkit-box-orient: vertical;
+      box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 500px;
+      white-space: normal;
+    }
+  </style>
+
+  <script>
+    function deleteUsers(id) {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          $.ajax({
+            url: "/admin/delete_faq",
+            method: "post",
+            data: { id: id },
+            success: function (res) {
+              if (res) {
+                Swal.fire({
+                  title: "Deleted!",
+                  text: "The FAQ has been deleted successfully.",
+                  icon: "success",
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
+
+                setTimeout(() => {
+                  $(`#faq-row-${id}`).remove();
+
+                  $("#myTable tbody tr").each(function (index) {
+                    $(this)
+                      .find("td:first")
+                      .text(index + 1);
+                  });
+                }, 2000);
+              }
+            },
+            error: function (err) {
+              Swal.fire({
+                title: "Error!",
+                text: "There was an issue deleting the FAQ.",
+                icon: "error",
+              });
+            },
+          });
+        }
+      });
+    }
+  </script>
+
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+  <script>
+    $(document).ready(function () {
+      $("#myTable").DataTable();
+    });
+  </script>
+</body>
+<!-- END: Body-->

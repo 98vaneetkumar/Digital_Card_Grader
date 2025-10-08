@@ -61,6 +61,8 @@ module.exports = {
         name: payload.name,
         lastName: payload.lastName,
         email: payload.email,
+        role: 1,
+        status: 1,
         password: hashedPassword,
         deviceToken: payload.deviceToken,
         deviceType: payload.deviceType,

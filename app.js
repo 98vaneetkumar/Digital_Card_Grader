@@ -13,6 +13,7 @@ const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 4000;
 
 const indexRouter = require("./routes/index");
+const adminRouter = require("./routes/adminRouter")();
 const usersRouter = require("./routes/userRoute")();
 const app = express();
 
@@ -78,9 +79,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(null, swaggerOptions));
 
 // Routes
 app.use("/", indexRouter);
+app.use("/admin", adminRouter);
 app.use("/users", usersRouter);
-
-
 
 // 404 Error Handler
 app.use((req, res, next) => {

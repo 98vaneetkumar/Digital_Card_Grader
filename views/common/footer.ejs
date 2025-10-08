@@ -1,0 +1,41 @@
+<footer class="footer footer-static footer-light">
+  <p class="clearfix mb-0">
+    <span class="float-md-start d-block d-md-inline-block mt-25">
+      COPYRIGHT &copy; 2025
+      <a class="ms-25" href="#" target="_blank">DCGs</a>
+      <span class="d-none d-sm-inline-block">, All rights Reserved</span>
+    </span>
+  </p>
+</footer>
+
+<!-- Scroll to Top Button -->
+<button class="btn btn-primary btn-icon scroll-top" type="button" id="scrollTopBtn" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+  <i data-feather="arrow-up"></i>
+</button>
+
+<!-- Feather Icons Script -->
+<script src="https://unpkg.com/feather-icons"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize Feather icons
+    if (typeof feather !== "undefined") {
+      feather.replace();
+    }
+
+    // Scroll-to-top functionality
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+    window.addEventListener("scroll", function () {
+      if (window.scrollY > 300) {
+        scrollTopBtn.style.display = "block";
+      } else {
+        scrollTopBtn.style.display = "none";
+      }
+    });
+
+    scrollTopBtn.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+</script>

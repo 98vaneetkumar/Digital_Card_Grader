@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const emailTamplate = require("./emailTemplate/forgetPassword");
+const fs = require("fs");
 
 module.exports = {
   success: async (res, message, body = {}) => {
@@ -73,6 +74,39 @@ module.exports = {
       return `/images/${name}`;
     } catch (error) {
       console.error("Error during file upload:", error);
+      return null;
+    }
+  },
+
+  csvFileUploadAndAppend: async (file) => {
+     try {
+    if (!file || !file.name) return false;
+
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+    if (fileExtension !== "csv") return false;
+
+    // Save in public/csv using original file name
+    const publicCsvPath = path.join(__dirname, "..", "public", "csv", file.name);
+    await new Promise((resolve, reject) => {
+      file.mv(publicCsvPath, (err) => (err ? reject(err) : resolve()));
+    });
+
+    // Append to main pokemon.csv
+    const pokemonCsvPath = path.join(__dirname, "..", "data", "pokemon.csv");
+
+    const existingCsv = fs.existsSync(pokemonCsvPath)
+      ? fs.readFileSync(pokemonCsvPath, "utf8").trim().split("\n")
+      : [];
+
+    const newCsv = fs.readFileSync(publicCsvPath, "utf8").trim().split("\n");
+    const newDataRows = newCsv.slice(1); // skip header
+    const merged = existingCsv.concat(newDataRows);
+
+    fs.writeFileSync(pokemonCsvPath, merged.join("\n"), "utf8");
+
+    return true;
+    } catch (error) {
+      console.error("❌ Error during CSV append:", error);
       return null;
     }
   },
@@ -148,6 +182,16 @@ module.exports = {
     } catch (error) {
       console.log("forgetPassword error", error);
       throw error;
+    }
+  },
+  generateOTP: async (req, res) => {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  },
+  session: async (req, res, next) => {
+    if (req.session.user) {
+      next();
+    } else {
+      return res.redirect("/admin/login");
     }
   },
 };

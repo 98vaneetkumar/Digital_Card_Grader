@@ -1,0 +1,178 @@
+<!-- BEGIN: Head-->
+<%- include('../../common/header') %>
+<style>
+  .profile label.error {
+    color: red;
+    font-size: 12px;
+    position: relative;
+    bottom: auto;
+  }
+
+  .file-preview {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f8f8;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .file-preview span {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .remove-file-btn {
+    background: rgba(255, 0, 0, 0.8);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+<!-- END: Head-->
+
+<!-- BEGIN: Body-->
+<body class="vertical-layout vertical-menu-modern navbar-floating footer-static" data-open="click" data-menu="vertical-menu-modern" data-col="">
+  <!-- sidebar -->
+  <%- include('../../common/sidebar') %>
+  <!-- navbar -->
+  <%- include('../../common/navbar') %>
+
+  <!-- BEGIN: Content-->
+  <div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-xxl p-0">
+      <div class="content-body">
+        <div class="row justify-content-center">
+          <div class="col-md-8 mx-auto">
+            <div class="auth-wrapper auth-v1 px-2">
+              <div class="auth-inner py-2">
+                <div class="card mb-0">
+                  <div class="card-body profile">
+                    <h4 class="mb-2 text-center">Upload CSV</h4>
+
+                    <form
+                      class="auth-register-form mt-2"
+                      action="/admin/csvDataUpload"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      id="uploadCsvForm"
+                    >
+                      <div class="mb-1">
+                        <label for="csvFile" class="form-label">Select CSV File</label>
+                        <input
+                          class="form-control"
+                          type="file"
+                          id="csvFile"
+                          name="csvFile"
+                          accept=".csv"
+                          required
+                        />
+                      </div>
+
+                      <!-- File Preview -->
+                      <div id="filePreview" class="file-preview" style="display: none">
+                        <span id="fileName"></span>
+                        <button type="button" class="remove-file-btn" id="removeFile">✖</button>
+                      </div>
+
+                      <div class="col-md-7 mx-auto mt-2">
+                        <button class="btn btn-primary w-100" type="submit">Upload CSV</button>
+                      </div>
+                    </form>
+
+                    <div class="mt-2 text-center">
+                      <small class="text-muted">Only <b>.csv</b> files are accepted.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END: Content-->
+
+  <%- include('../../common/script') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    // SweetAlert flash messages
+    <% if (typeof flash !== 'undefined') { %>
+      <% if (flash.msg && flash.msg.length > 0) { %>
+        Swal.fire({
+          title: "Success ✅",
+          text: "<%= flash.msg[0] %>",
+          icon: "success",
+          timer: 2500,
+          showConfirmButton: false
+        });
+      <% } %>
+
+      <% if (flash.error && flash.error.length > 0) { %>
+        Swal.fire({
+          title: "Error ❌",
+          text: "<%= flash.error[0] %>",
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: true
+        });
+      <% } %>
+    <% } %>
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      // File preview
+      $("#csvFile").change(function (event) {
+        let file = event.target.files[0];
+        if (file) {
+          $("#fileName").text(file.name);
+          $("#filePreview").show();
+        }
+      });
+
+      $("#removeFile").click(function () {
+        $("#csvFile").val("");
+        $("#filePreview").hide();
+      });
+
+      // Form validation
+      $("#uploadCsvForm").validate({
+        rules: {
+          csvFile: {
+            required: true,
+            extension: "csv",
+          },
+        },
+        messages: {
+          csvFile: {
+            required: "Please select a CSV file",
+            extension: "Only .csv files are allowed",
+          },
+        },
+      });
+    });
+
+    $(window).on("load", function () {
+      if (feather) {
+        feather.replace({ width: 14, height: 14 });
+      }
+    });
+  </script>
+</body>
+<!-- END: Body-->
