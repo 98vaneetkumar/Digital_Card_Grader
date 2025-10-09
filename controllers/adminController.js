@@ -138,7 +138,7 @@ module.exports = {
       console.log("csvFiles found:", csvFiles);
 
       res.render("admin/csv/csvList", {
-        title: "CSV List",
+        title: "Upload CSV",
         session: req.session.user,
         msg: req.flash("msg"),
         error: req.flash("error"),
