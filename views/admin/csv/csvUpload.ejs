@@ -59,7 +59,7 @@
               <div class="auth-inner py-2">
                 <div class="card mb-0">
                   <div class="card-body profile">
-                    <h4 class="mb-2 text-center">Upload CSV</h4>
+                    <h4 class="mb-2 text-center">Upload CSV / Json</h4>
 
                     <form
                       class="auth-register-form mt-2"
@@ -69,13 +69,13 @@
                       id="uploadCsvForm"
                     >
                       <div class="mb-1">
-                        <label for="csvFile" class="form-label">Select CSV File</label>
+                        <label for="csvFile" class="form-label">Select CSV / JSON File</label>
                         <input
                           class="form-control"
                           type="file"
                           id="csvFile"
                           name="csvFile"
-                          accept=".csv"
+                          accept=".csv,.json"
                           required
                         />
                       </div>
@@ -92,7 +92,7 @@
                     </form>
 
                     <div class="mt-2 text-center">
-                      <small class="text-muted">Only <b>.csv</b> files are accepted.</small>
+                      <small class="text-muted">Only <b>.csv</b> and <b>.json</b> files are accepted.</small>
                     </div>
                   </div>
                 </div>
@@ -152,20 +152,21 @@
       });
 
       // Form validation
-      $("#uploadCsvForm").validate({
+     $("#uploadCsvForm").validate({
         rules: {
           csvFile: {
             required: true,
-            extension: "csv",
+            extension: "csv|json",
           },
         },
         messages: {
           csvFile: {
-            required: "Please select a CSV file",
-            extension: "Only .csv files are allowed",
+            required: "Please select a file",
+            extension: "Only .csv or .json files are allowed",
           },
         },
       });
+
     });
 
     $(window).on("load", function () {

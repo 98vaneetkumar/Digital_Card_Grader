@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const emailTamplate = require("./emailTemplate/forgetPassword");
 const fs = require("fs");
+const { Parser } = require("json2csv");
 
 module.exports = {
   success: async (res, message, body = {}) => {
@@ -79,32 +80,81 @@ module.exports = {
   },
 
   csvFileUploadAndAppend: async (file) => {
-     try {
-    if (!file || !file.name) return false;
+    try {
+      if (!file || !file.name) return false;
 
-    const fileExtension = file.name.split(".").pop().toLowerCase();
-    if (fileExtension !== "csv") return false;
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      const publicCsvFolder = path.join(__dirname, "..", "public", "csv");
+      const pokemonCsvPath = path.join(__dirname, "..", "data", "all_cards.csv");
 
-    // Save in public/csv using original file name
-    const publicCsvPath = path.join(__dirname, "..", "public", "csv", file.name);
-    await new Promise((resolve, reject) => {
-      file.mv(publicCsvPath, (err) => (err ? reject(err) : resolve()));
-    });
+      if (!fs.existsSync(publicCsvFolder)) fs.mkdirSync(publicCsvFolder, { recursive: true });
 
-    // Append to main pokemon.csv
-    const pokemonCsvPath = path.join(__dirname, "..", "data", "pokemon.csv");
+      let finalCsvPath = path.join(publicCsvFolder, file.name);
 
-    const existingCsv = fs.existsSync(pokemonCsvPath)
-      ? fs.readFileSync(pokemonCsvPath, "utf8").trim().split("\n")
-      : [];
+      // 🟡 Handle JSON file
+      if (fileExtension === "json") {
+        // ✅ If file.data is empty, read file from temp path
+        let jsonContent = file.data && file.data.length
+          ? file.data.toString().trim()
+          : null;
 
-    const newCsv = fs.readFileSync(publicCsvPath, "utf8").trim().split("\n");
-    const newDataRows = newCsv.slice(1); // skip header
-    const merged = existingCsv.concat(newDataRows);
+        if (!jsonContent && file.tempFilePath) {
+          jsonContent = fs.readFileSync(file.tempFilePath, "utf8").trim();
+        }
 
-    fs.writeFileSync(pokemonCsvPath, merged.join("\n"), "utf8");
+        if (!jsonContent) {
+          console.error("❌ JSON file is empty or unreadable");
+          return false;
+        }
 
-    return true;
+        let jsonData;
+        try {
+          jsonData = JSON.parse(jsonContent);
+          if (typeof jsonData !== "object" || jsonData === null) {
+            console.error("❌ Invalid JSON structure");
+            return false;
+          }
+        } catch (err) {
+          console.error("❌ Invalid JSON format:", err);
+          return false;
+        }
+
+        // Convert JSON to CSV
+        const json2csvParser = new Parser();
+        const csv = json2csvParser.parse(jsonData);
+
+        const convertedName = file.name.replace(/\.json$/i, ".csv");
+        finalCsvPath = path.join(publicCsvFolder, convertedName);
+        fs.writeFileSync(finalCsvPath, csv, "utf8");
+      }
+
+      // 🟢 Handle CSV file
+      else if (fileExtension === "csv") {
+        await new Promise((resolve, reject) => {
+          file.mv(finalCsvPath, (err) => (err ? reject(err) : resolve()));
+        });
+      } else {
+        console.error("❌ Unsupported file type");
+        return false;
+      }
+
+      // 🧩 Append to main all_cards.csv
+      const existingCsv = fs.existsSync(pokemonCsvPath)
+        ? fs.readFileSync(pokemonCsvPath, "utf8").trim().split("\n")
+        : [];
+
+      const newCsv = fs.readFileSync(finalCsvPath, "utf8").trim().split("\n");
+
+      if (newCsv.length <= 1) {
+        console.error("❌ Converted or uploaded CSV is empty");
+        return false;
+      }
+
+      const newDataRows = newCsv.slice(1);
+      const merged = existingCsv.concat(newDataRows);
+      fs.writeFileSync(pokemonCsvPath, merged.join("\n"), "utf8");
+
+      return true;
     } catch (error) {
       console.error("❌ Error during CSV append:", error);
       return null;

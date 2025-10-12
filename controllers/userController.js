@@ -525,7 +525,7 @@ module.exports = {
       const savedAbsolutePath = path.join(__dirname, "..", "public", savedRelativePath);
 
       // 2️⃣ LOAD POKEMON DATA CSV HERE
-      const csvPath = path.join(__dirname, "..", "data", "pokemon.csv"); // adjust path
+      const csvPath = path.join(__dirname, "..", "data", "all_cards.csv"); // adjust path
       const pokemonData = await loadPokemonCSV(csvPath);
 
       // 3️⃣ GRADE CARD

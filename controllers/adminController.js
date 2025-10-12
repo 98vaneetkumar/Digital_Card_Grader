@@ -240,8 +240,8 @@ module.exports = {
       // Remove file
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-      // Remove its rows from pokemon.csv
-      const pokemonCsvPath = path.join(process.cwd(), "data", "pokemon.csv");
+      // Remove its rows from all_cards.csv
+      const pokemonCsvPath = path.join(process.cwd(), "data", "all_cards.csv");
       if (fs.existsSync(pokemonCsvPath) && csvToRemove.length > 0) {
         const existingCsv = fs.readFileSync(pokemonCsvPath, "utf8").trim().split("\n");
         const filtered = existingCsv.filter(row => !csvToRemove.includes(row));
