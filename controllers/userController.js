@@ -532,7 +532,7 @@ module.exports = {
       const grading = await gradeCard(savedAbsolutePath, pokemonData);
 
       if (grading.pokemon.Name === "Unknown") {
-        return commonHelper.failed(res, "❌ No Pokémon card detected in the image.");
+        return commonHelper.failed(res, "Card not available");
       }
 
       // 4️⃣ Return response
