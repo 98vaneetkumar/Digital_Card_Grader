@@ -8,4 +8,5 @@ module.exports = {
   faqModel: require("./faqModel")(Sequelize, sequelize, Sequelize.DataTypes),
   chatConstantModel:require("./chatConstantModel")(Sequelize, sequelize, Sequelize.DataTypes),
   messageModel:require("./messageModel")(Sequelize, sequelize, Sequelize.DataTypes),
+  fileBackupsModel: require("./fileBackups")(Sequelize, sequelize, Sequelize.DataTypes),
 };

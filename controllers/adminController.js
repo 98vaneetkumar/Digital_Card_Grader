@@ -182,9 +182,37 @@ module.exports = {
         return res.redirect("/admin/csvUpload");
       }
 
-      req.flash("msg", "CSV file uploaded successfully ✅");
-      res.redirect("/admin/csvList");
+      // ✅ The helper saves files to /public/csv/
+      const uploadPath = path.join(__dirname, "..", "public", "csv", file.name);
 
+      // Some JSONs are converted to CSV (filename changes)
+      let finalPath = uploadPath;
+      if (!fs.existsSync(uploadPath)) {
+        // Check if converted JSON→CSV file exists instead
+        const convertedName = file.name.replace(/\.json$/i, ".csv");
+        finalPath = path.join(__dirname, "..", "public", "csv", convertedName);
+      }
+
+      // ✅ Ensure file exists before reading
+      if (!fs.existsSync(finalPath)) {
+        console.error("❌ Uploaded file not found at:", finalPath);
+        req.flash("error", "Uploaded file not found ❌");
+        return res.redirect("/admin/csvUpload");
+      }
+
+      const fileContent = fs.readFileSync(finalPath, "utf8");
+      const fileType = file.name.endsWith(".json") ? "json" : "csv";
+
+      await Models.fileBackupsModel.create({
+        filename: file.name,
+        fileType,
+        content: fileContent,
+        uploadedBy: req.session.user.email || "admin",
+        uploadedAt: new Date(),
+      });
+
+      req.flash("msg", "File uploaded & stored in DB successfully ✅");
+      res.redirect("/admin/csvList");
     } catch (error) {
       console.error(error);
       req.flash("error", "An unexpected error occurred ❌");
@@ -218,37 +246,46 @@ module.exports = {
 
   deleteCsv: async (req, res) => {
     try {
-      const { id } = req.body; // or send file name from frontend instead
+      const { id } = req.body; // assuming 'id' or file index from frontend
 
-      // Folder path
-      const csvFolder = path.join(process.cwd(), "public", "csv");
-      const csvFiles = fs.readdirSync(csvFolder).filter(f => f.endsWith(".csv"));
+    // CSV folder path
+    const csvFolder = path.join(process.cwd(), "public", "csv");
+    const csvFiles = fs.readdirSync(csvFolder).filter((f) => f.endsWith(".csv"));
 
-      // Validate id
-      const index = parseInt(id) - 1;
-      if (!csvFiles[index]) return res.json({ success: false });
+    // Validate
+    const index = parseInt(id) - 1;
+    if (!csvFiles[index]) return res.json({ success: false, msg: "Invalid file ID" });
 
-      const fileName = csvFiles[index];
-      const filePath = path.join(csvFolder, fileName);
+    const fileName = csvFiles[index];
+    const filePath = path.join(csvFolder, fileName);
 
-      // Read CSV data first
-      let csvToRemove = [];
-      if (fs.existsSync(filePath)) {
-        csvToRemove = fs.readFileSync(filePath, "utf8").trim().split("\n").slice(1); // skip header
-      }
+    // 🔹 STEP 1: Read data to remove (for all_cards.csv cleanup)
+    let csvToRemove = [];
+    if (fs.existsSync(filePath)) {
+      csvToRemove = fs.readFileSync(filePath, "utf8").trim().split("\n").slice(1); // skip header
+    }
 
-      // Remove file
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    // 🔹 STEP 2: Delete from /public/csv/
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-      // Remove its rows from all_cards.csv
-      const pokemonCsvPath = path.join(process.cwd(), "data", "all_cards.csv");
-      if (fs.existsSync(pokemonCsvPath) && csvToRemove.length > 0) {
-        const existingCsv = fs.readFileSync(pokemonCsvPath, "utf8").trim().split("\n");
-        const filtered = existingCsv.filter(row => !csvToRemove.includes(row));
-        fs.writeFileSync(pokemonCsvPath, filtered.join("\n"), "utf8");
-      }
+    // 🔹 STEP 3: Delete from /data/all_cards.csv
+    const pokemonCsvPath = path.join(process.cwd(), "data", "all_cards.csv");
+    if (fs.existsSync(pokemonCsvPath) && csvToRemove.length > 0) {
+      const existingCsv = fs.readFileSync(pokemonCsvPath, "utf8").trim().split("\n");
+      const filtered = existingCsv.filter((row) => !csvToRemove.includes(row));
+      fs.writeFileSync(pokemonCsvPath, filtered.join("\n"), "utf8");
+    }
 
-      return res.json({ success: true });
+    // 🔹 STEP 4: Delete from DB (fileBackups)
+    const deleted = await Models.fileBackupsModel.destroy({
+      where: { filename: fileName },
+    });
+
+    if (deleted === 0) {
+      console.warn(`⚠️ No DB entry found for ${fileName}`);
+    }
+
+    return res.json({ success: true, msg: "File and DB record deleted successfully ✅" });
 
     } catch (error) {
       console.log("❌ deleteCsv error:", error);
