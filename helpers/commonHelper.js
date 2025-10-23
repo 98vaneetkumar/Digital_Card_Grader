@@ -55,15 +55,22 @@ module.exports = {
       if (!file || file.name === "") return null;
 
       // Get file extension
-      let fileExtension = file.name.split(".").pop();
+      const fileExtension = file.name.split(".").pop();
 
-      // Generate unique file name using uuid
-      const name = uuid() + "." + fileExtension;
+      // Generate unique file name
+      const name = `${uuid()}.${fileExtension}`;
 
-      // Create the correct path by referencing 'public/images' folder
-      const filePath = path.join(__dirname, "..", "public", folder, name);
+      // Define upload directory and file path
+      const uploadDir = path.join(__dirname, "..", "public", folder);
+      const filePath = path.join(uploadDir, name);
 
-      // Wait until the file is actually moved
+      // ✅ Create folder if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log(`📁 Folder created: ${uploadDir}`);
+      }
+
+      // Move the file
       await new Promise((resolve, reject) => {
         file.mv(filePath, (err) => {
           if (err) reject(err);
@@ -71,10 +78,10 @@ module.exports = {
         });
       });
 
-      // Return the file path relative to the public folder
-      return `/images/${name}`;
+      // Return relative file path
+      return `/${folder}/${name}`;
     } catch (error) {
-      console.error("Error during file upload:", error);
+      console.error("❌ Error during file upload:", error);
       return null;
     }
   },
