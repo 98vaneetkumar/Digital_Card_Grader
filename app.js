@@ -11,11 +11,13 @@ const flash = require("connect-flash");
 
 const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 4000;
-
+const app = express();
+const server=require("http").createServer(app)
+const io = require('socket.io')(server);
+require("./socket/socket")(io)
 const indexRouter = require("./routes/index");
 const adminRouter = require("./routes/adminRouter")();
 const usersRouter = require("./routes/userRoute")();
-const app = express();
 
 // Connect to Database
 require("./dbConnection").connectdb();
@@ -96,6 +98,6 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

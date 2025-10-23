@@ -13,7 +13,7 @@ const connectdb = async () => {
   await sequelize
     .authenticate() 
     .then(async () => {
-      await sequelize.sync({ alter: false });
+      await sequelize.sync({ alter: true });
       console.log("db is connected and sync also"); 
     })  
     .catch((err) => {

@@ -326,10 +326,8 @@ module.exports = {
   updateProfile: async (req, res) => {
     try {
       const schema = Joi.object().keys({
-        firstName: Joi.string().optional(),
-        lastName: Joi.string().optional(),
-        email: Joi.string().optional().email(),
-        phoneNumber: Joi.string().optional(),
+        name: Joi.string().optional(),
+        bio: Joi.string().optional(),
       });
 
       let payload = await helper.validationJoi(req.body, schema);
@@ -337,12 +335,15 @@ module.exports = {
       if (!req.user || !req.user.id) {
         return commonHelper.failed(res, Response.failed_msg.userIdReq);
       }
-
+      if(req.files&&req.files.image){
+        const file = req.files.image;
+        const savedRelativePath = await commonHelper.fileUpload(file, "images");
+        payload.profilePicture = savedRelativePath;
+      }
       let updateProfile = {
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        email: payload.email,
-        phoneNumber: payload.phoneNumber,
+        name: payload.name,
+        bio:payload.bio,
+        profilePicture: payload.profilePicture? payload.profilePicture : req.user.profilePicture,
       };
 
       await Models.userModel.update(updateProfile, {

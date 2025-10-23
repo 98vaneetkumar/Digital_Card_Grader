@@ -132,12 +132,22 @@
             "value": ""
           },
           {
-            "name": "email",
+            "name": "bio",
             "in": "formData",
-            "description": "Enter the email",
+            "description": "Enter the bio",
             "required": false,
             "type": "string",
             "value": ""
+          },
+            {
+            "name": "image",
+            "in": "formData",
+            "description": "image to upload",
+            "required": false,
+            "type": "file",
+            "format": "binary",
+            "maxLength": 5242880,
+            "allowedMimeTypes": ["image/jpeg", "image/png"]
           }
         ],
         "responses": {}
