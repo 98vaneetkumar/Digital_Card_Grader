@@ -21,7 +21,7 @@ async function gradeCard(imagePath, pokemonData = []) {
     console.log(`🔍 OCR detected text: "${text}" (conf: ${confidence})`);
 
     // ❌ Skip if OCR is junk
-    if (confidence < 45 || text.length < 2) {
+    if (confidence < 25 || text.length < 2) {
       console.log("🚫 Low OCR confidence or no text — skipping grading.");
       return {
         pokemon: { Name: "Unknown" },
