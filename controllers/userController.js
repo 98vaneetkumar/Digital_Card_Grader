@@ -335,15 +335,15 @@ module.exports = {
       if (!req.user || !req.user.id) {
         return commonHelper.failed(res, Response.failed_msg.userIdReq);
       }
-      if(req.files&&req.files.image){
+      if (req.files && req.files.image) {
         const file = req.files.image;
         const savedRelativePath = await commonHelper.fileUpload(file, "images");
         payload.profilePicture = savedRelativePath;
       }
       let updateProfile = {
         name: payload.name,
-        bio:payload.bio,
-        profilePicture: payload.profilePicture? payload.profilePicture : req.user.profilePicture,
+        bio: payload.bio,
+        profilePicture: payload.profilePicture ? payload.profilePicture : req.user.profilePicture,
       };
 
       await Models.userModel.update(updateProfile, {
@@ -513,36 +513,42 @@ module.exports = {
   uploadAndGrade: async (req, res) => {
     try {
       if (!req.files || !req.files.card) {
-        return commonHelper.failed(res, "No card image uploaded.");
+        return commonHelper.failed(res, "No card image uploaded.", 400);
       }
 
       const file = req.files.card;
 
-      // 1️⃣ Save uploaded file locally
+      // 1️⃣ SAVE FILE LOCALLY
       const savedRelativePath = await commonHelper.fileUpload(file, "images");
       if (!savedRelativePath) {
-        return commonHelper.failed(res, "Failed to save the uploaded card.");
+        return commonHelper.failed(res, "Failed to save uploaded card.", 500);
       }
       const savedAbsolutePath = path.join(__dirname, "..", "public", savedRelativePath);
 
-      // 2️⃣ LOAD POKEMON DATA CSV HERE
-      const csvPath = path.join(__dirname, "..", "data", "all_cards.csv"); // adjust path
+      // 2️⃣ LOAD CSV DATA
+      const csvPath = path.join(__dirname, "..", "data", "all_cards.csv");
       const pokemonData = await loadPokemonCSV(csvPath);
 
       // 3️⃣ GRADE CARD
       const grading = await gradeCard(savedAbsolutePath, pokemonData);
 
-      if (grading.pokemon.Name === "Unknown") {
-        return commonHelper.failed(res, "Card not available");
+      // 4️⃣ VALIDATION RESPONSE
+      if (!grading.success) {
+        let message = "Card not recognized.";
+        if (grading.reason === "low_confidence") message = "Low OCR confidence — try clearer image.";
+        if (grading.reason === "no_borders") message = "Card not visually detected.";
+
+        console.log("🚫 Grading failed reason:", grading.reason);
+        return commonHelper.failed(res, message, 400);
       }
 
-      // 4️⃣ Return response
+      // 5️⃣ SUCCESS RESPONSE
       const response = {
         scores: {
           centering: parseFloat(grading.centering),
           edges: parseFloat(grading.edges),
           surface: parseFloat(grading.surface),
-          corners: parseFloat(grading.corners || 0),
+          corners: parseFloat(grading.corners),
           overall: parseFloat(grading.overall),
         },
         pokemon: grading.pokemon,
