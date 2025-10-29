@@ -535,7 +535,7 @@ module.exports = {
       // 4️⃣ VALIDATION RESPONSE
       if (!grading.success) {
         let message = "Card not recognized.";
-        if (grading.reason === "low_confidence") message = "Low OCR confidence — try clearer image.";
+        if (grading.reason === "low_confidence") message = "Try clearer image.";
         if (grading.reason === "no_borders") message = "Card not visually detected.";
 
         console.log("🚫 Grading failed reason:", grading.reason);
