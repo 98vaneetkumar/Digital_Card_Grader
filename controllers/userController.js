@@ -523,6 +523,7 @@ module.exports = {
       if (!savedRelativePath) {
         return commonHelper.failed(res, "Failed to save uploaded card.", 500);
       }
+
       const savedAbsolutePath = path.join(__dirname, "..", "public", savedRelativePath);
 
       // 2️⃣ LOAD CSV DATA
@@ -537,6 +538,7 @@ module.exports = {
         let message = "Card not recognized.";
         if (grading.reason === "low_confidence") message = "Try clearer image.";
         if (grading.reason === "no_borders") message = "Card not visually detected.";
+        if (grading.reason === "bad_aspect_ratio") message = "Image not card-like.";
 
         console.log("🚫 Grading failed reason:", grading.reason);
         return commonHelper.failed(res, message, 400);
