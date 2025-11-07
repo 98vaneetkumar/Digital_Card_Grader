@@ -25,7 +25,8 @@ module.exports=function(){
     router.get('/usersCards', authentication, controller.userController.usersCards);
     router.post('/cardDetails', authentication, controller.userController.cardDetails);
 
-
+    router.post("/addCollection",authentication,controller.userController.addCollection)
+    router.get("/collectionList",authentication,controller.userController.collectionList)
     return router
 }
 

@@ -656,4 +656,53 @@ module.exports = {
       );
     }
   },
+  addCollection:async(req,res)=>{
+    try {
+         if (req.files && req.files.image) {
+        const file = req.files.image;
+        const savedRelativePath = await commonHelper.fileUpload(file, "images");
+        payload.imagePath = savedRelativePath;
+      }
+      let objToSave={
+        imagePath:payload.imagePath,
+        cardName:payload.cardName,
+        cardType:payload.cardType,
+        userId:req.user.id
+      }
+      await Models.userCollectionModel.create(objToSave)
+         return commonHelper.success(
+        res,
+        "User cart collection add successfully",
+        
+      );
+    } catch (error) {
+       console.error("Error while fetching user cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user cards",
+        error.message
+      );
+    }
+  },
+  collectionList:async(req,res)=>{
+    try {
+      let result=await Models.userCollectionModel.findAll({
+        where:{
+          userId:req.user.id
+        }
+      })
+         return commonHelper.success(
+        res,
+        "User collection cards fetched successfully",
+        result
+      );
+    } catch (error) {
+       console.error("Error while fetching user cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user cards",
+        error.message
+      );
+    }
+  },
 };
