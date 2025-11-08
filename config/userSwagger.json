@@ -488,6 +488,62 @@
         ],
         "responses": {}
       }
+    },
+    "/users/addCollection": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-addCollection-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "imagePath",
+            "in": "formData",
+            "description": "Enter the imagePath",
+            "required": true,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "cardName",
+            "in": "formData",
+            "description": "Enter the card name",
+            "required": false,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "cardType",
+            "in": "formData",
+            "description": "Enter the card type (0 FOR COLLECTION 1 FOR MARKET PLACE)",
+            "enum": [0, 1],
+            "required": false,
+            "type": "number",
+            "value": "0"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/collectionList": {
+      "get": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-collectionList-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {}
+      }
     }
   },
   "definitions": {}

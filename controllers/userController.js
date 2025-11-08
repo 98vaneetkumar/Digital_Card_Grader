@@ -656,6 +656,7 @@ module.exports = {
       );
     }
   },
+
   addCollection:async(req,res)=>{
     try {
          if (req.files && req.files.image) {
@@ -684,6 +685,7 @@ module.exports = {
       );
     }
   },
+  
   collectionList:async(req,res)=>{
     try {
       let result=await Models.userCollectionModel.findAll({

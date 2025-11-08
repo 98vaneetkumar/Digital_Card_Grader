@@ -17,11 +17,6 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         type: DataTypes.STRING(255),
         allowNull: true,
       },
-      cardType: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 0, // 0: pokemon card, 1: sports card
-      },
       imagePath: {
         type: DataTypes.STRING(255),
         allowNull: true,
