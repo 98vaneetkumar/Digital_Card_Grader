@@ -826,4 +826,64 @@ module.exports = {
       );
     }
   },
+  home: async (req, res) => {
+    try {
+      let cardWhere = {}; // condition for userCards
+      // 🔍 Apply search filter
+      if (req.query && req.query.search) {
+        const search = req.query.search.trim();
+        // Also search in related userCards by cardName
+        cardWhere = {
+          cardName: { [Op.like]: `%${search}%` },
+        };
+      }
+
+      // 🧩 Fetch data with association + search filters
+      const response = await Models.userMarketPlaceModel.findAll({
+        include: [
+          {
+            model: Models.userCardsModel,
+            where: cardWhere, // Search inside userCards table
+            required: true, // ensures only records that match are fetched
+          },
+        ],
+        order: [["createdAt", "DESC"]],
+      });
+
+      return commonHelper.success(
+        res,
+        "Market place cards fetched successfully",
+        response
+      );
+    } catch (error) {
+      console.error("Error while fetching marketplace cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching marketplace cards",
+        error.message
+      );
+    }
+  },
+  getProfile:async(req,res)=>{
+    try {
+      let response = await Models.userModel.findOne({
+        where: {
+          id: req.user.id,
+        },
+        raw:true
+      });
+      return commonHelper.success(
+        res,
+        "User profile fetched successfully",
+        response
+      );
+    } catch (error) {
+      console.error("Error while fetching user profile:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user profile",
+        error.message
+      );
+    }
+  }
 };

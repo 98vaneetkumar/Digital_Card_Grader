@@ -668,6 +668,46 @@
         "parameters": [],
         "responses": {}
       }
+    },
+    "/users/home": {
+      "get": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-home-post",
+        "tags": ["Application Home Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Enter the search",
+            "required": true,
+            "type": "string",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/getProfile": {
+      "get": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-getProfile-post",
+        "tags": ["Application User Profile Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+        ],
+        "responses": {}
+      }
     }
   },
   "definitions": {}

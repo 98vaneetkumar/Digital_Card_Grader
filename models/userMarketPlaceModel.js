@@ -13,7 +13,7 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
-        cardId: {
+    cardId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {

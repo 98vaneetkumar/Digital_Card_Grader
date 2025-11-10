@@ -32,6 +32,9 @@ module.exports=function(){
 
     router.post("/addToMarketPlace",authentication,controller.userController.addToMarketPlace)
     router.get("/marketPlaceList",authentication,controller.userController.marketPlaceList)
+    router.get("/cardList",authentication,controller.userController.cardList)
+    router.get("/home",authentication,controller.userController.home)
+    router.get("/getProfile",authentication,controller.userController.getProfile)
     return router
 }
 
