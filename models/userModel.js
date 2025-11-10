@@ -8,6 +8,11 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         allowNull: true,
         defaultValue: 1, // 0 for admin, 1 for user
       },
+      customerId:{
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        defaultValue: null  ,
+      },
       name: {
         type: DataTypes.STRING(50),
         allowNull: false,

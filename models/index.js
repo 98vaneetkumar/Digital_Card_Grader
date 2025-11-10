@@ -12,4 +12,5 @@ module.exports = {
   messageModel:require("./messageModel")(Sequelize, sequelize, Sequelize.DataTypes),
   fileBackupsModel: require("./fileBackups")(Sequelize, sequelize, Sequelize.DataTypes),
   contactUsModel: require("./contactUsModel")(Sequelize, sequelize, Sequelize.DataTypes),
+  transactionsModel: require("./transactionModel")(Sequelize, sequelize, Sequelize.DataTypes),
 };

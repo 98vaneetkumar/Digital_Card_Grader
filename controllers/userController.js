@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt");
 //   process.env.TWILIO_SERVICE_SID
 // );
 const secretKey = process.env.SECRET_KEY;
-
+const stripe = require("stripe")(process.env.STRIPE_SK_KEY);
 const commonHelper = require("../helpers/commonHelper.js");
 const helper = require("../helpers/validation.js");
 const Models = require("../models/index");
@@ -59,7 +59,11 @@ module.exports = {
         payload.password,
         process.env.SALT
       );
-
+   const customer = await stripe.customers.create({
+        description: "Digital Card",
+        email: req.body.email,
+      });
+      let customerId = customer.id;
       let objToSave = {
         name: payload.name,
         lastName: payload.lastName,
@@ -69,6 +73,7 @@ module.exports = {
         password: hashedPassword,
         deviceToken: payload.deviceToken,
         deviceType: payload.deviceType,
+        customerId:customerId
       };
 
       let response = await Models.userModel.create(objToSave);
@@ -117,12 +122,24 @@ module.exports = {
       if (!isPasswordValid) {
         return commonHelper.failed(res, Response.failed_msg.invalidPassword);
       }
-
+      
+      if (user && user.customerId == null) {
+        const hashedPassword = await commonHelper.bcryptData(
+          payload.password,
+          process.env.SALT
+        );
+        let customer = await stripe.customers.create({
+          description: "Digital Card",
+          email: req.body.email,
+        });
+        var customerId = customer.id;
+      }
       await Models.userModel.update(
         {
           deviceToken: payload.deviceToken,
           deviceType: payload.deviceType,
           verifyStatus: 0,
+          customerId:user.customerId?user.customerId:customerId
         },
         {
           where: {
@@ -885,5 +902,91 @@ module.exports = {
         error.message
       );
     }
-  }
+  },
+    paymentIntent: async (req, res) => {
+    try {
+      let userDetail = await Models.userModel.findOne({
+        where: { id: req.user.id },
+        raw: true,
+      });
+      const ephemeralKey = await stripe.ephemeralKeys.create(
+        { customer: userDetail.customerId },
+        { apiVersion: "2022-11-15" }
+      );
+      const amount = parseFloat((req.body.amount * 100).toFixed(2));
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "USD",
+        customer: userDetail.customerId,
+        // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+      let result = {
+        paymentIntent: paymentIntent,
+        ephemeralKey: ephemeralKey.secret,
+        customer: userDetail.customerId,
+        publishableKey: process.env.STRIPE_PK_KEY,
+        transactionId: paymentIntent.id,
+      };
+      let adminId = await Models.userModel.findOne({
+        where: {
+          role: 0,
+        },
+        raw: true,
+      });
+      let objToSave = {
+        senderId: req.user.id,
+        receiverId: adminId.id,
+        amount: req.body.amount,
+        transactionId: paymentIntent.id,
+      };
+      await Models.transactionModel.create(objToSave);
+      return commonHelper.success(
+        res,
+        Response.success_msg.paymentIntent,
+        result
+      );
+    } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+    }
+  },
+  webHookFrontEnd: async (req, res) => {
+    try {
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        req.body.transactionId
+      );
+      await Models.transactionModel.update(
+        {
+          payment_status:
+            paymentIntent.status === "succeeded"
+              ? "succeeded"
+              : paymentIntent.status,
+        },
+        {
+          where: {
+            transactionId: req.body.transactionId,
+          },
+        }
+      );
+      return commonHelper.success(
+        res,
+        Response.success_msg.stripeWebHookFrontEnd
+      );
+    } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+    }
+  },
 };

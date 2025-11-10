@@ -708,6 +708,54 @@
         ],
         "responses": {}
       }
+    },
+    "/users/paymentIntent": {
+      "post": {
+        "x-swagger-router-paymentIntent": "middleware-name1",
+        "operationId": "users-login-post",
+        "tags": ["Application User Stripe"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "amount",
+            "in": "formData",
+            "description": "Enter the amount",
+            "required": true,
+            "type": "string",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/webHookFrontEnd": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-webHookFrontEnd-post",
+        "tags": ["Application User Stripe"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "formData",
+            "description": "Enter the transactionId",
+            "required": true,
+            "type": "string",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
     }
   },
   "definitions": {}

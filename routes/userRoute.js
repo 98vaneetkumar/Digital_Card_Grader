@@ -35,6 +35,8 @@ module.exports=function(){
     router.get("/cardList",authentication,controller.userController.cardList)
     router.get("/home",authentication,controller.userController.home)
     router.get("/getProfile",authentication,controller.userController.getProfile)
+    router.post("/paymentIntent",authentication,controller.userController.paymentIntent)
+    router.post("/webHookFrontEnd",authentication,controller.userController.webHookFrontEnd)
     return router
 }
 
