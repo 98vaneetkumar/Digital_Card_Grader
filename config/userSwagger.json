@@ -168,6 +168,61 @@
         "responses": {}
       }
     },
+    "/users/deleteAccount": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-deleteAccount-post",
+        "tags": ["Application User"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/users/contactUs": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-contactUs-post",
+        "tags": ["Application User"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "Enter the name",
+            "required": true,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "email",
+            "in": "formData",
+            "description": "Enter email ",
+            "required": true,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "description",
+            "in": "formData",
+            "description": "Enter the description",
+            "required": true,
+            "type": "string",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/users/changePassword": {
       "post": {
         "x-swagger-router-controller": "middleware-name1",
@@ -373,6 +428,14 @@
           }
         ],
         "parameters": [
+           {
+            "name": "collectionId",
+            "in": "formData",
+            "description": "Enter the collectionId",
+            "required": false,
+            "type": "string",
+            "value": ""
+          },
           {
             "name": "imagePath",
             "in": "formData",
@@ -516,15 +579,6 @@
             "required": false,
             "type": "string",
             "value": ""
-          },
-          {
-            "name": "cardType",
-            "in": "formData",
-            "description": "Enter the card type (0 FOR COLLECTION 1 FOR MARKET PLACE)",
-            "enum": [0, 1],
-            "required": false,
-            "type": "number",
-            "value": "0"
           }
         ],
         "responses": {}
@@ -534,6 +588,76 @@
       "get": {
         "x-swagger-router-controller": "middleware-name1",
         "operationId": "users-collectionList-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/users/addToMarketPlace": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-addToMarketPlace-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cardId",
+            "in": "formData",
+            "description": "Enter the cardId",
+            "required": true,
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "price",
+            "in": "formData",
+            "description": "Enter the card price",
+            "required": false,
+            "type": "string",
+            "value": ""
+          },
+           {
+            "name": "additionalNotes",
+            "in": "formData",
+            "description": "Enter the additionalNotes",
+            "required": false,
+            "type": "string",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/marketPlaceList": {
+      "get": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-marketPlaceList-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/users/cardList": {
+      "get": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-cardList-post",
         "tags": ["Application User Card Grading"],
         "description": "",
         "security": [

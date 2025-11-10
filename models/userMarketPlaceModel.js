@@ -1,6 +1,6 @@
 module.exports = (Sequelize, sequelize, DataTypes) => {
   return sequelize.define(
-    "userCollection",
+    "userMarketPlace",
     {
       ...require("./cors")(Sequelize, DataTypes),
       userId: {
@@ -13,18 +13,28 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
-      cardName: {
+        cardId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "userCards",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      price: {
         type: DataTypes.STRING(255),
         allowNull: true,
       },
-      imagePath: {
+      additionalNotes: {
         type: DataTypes.STRING(255),
         allowNull: true,
       },
     },
     {
       timestamps: true,
-      tableName: "userCollection",
+      tableName: "userMarketPlace",
     }
   );
 };

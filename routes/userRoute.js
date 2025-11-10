@@ -8,6 +8,8 @@ module.exports=function(){
     router.post('/signUp', controller.userController.signUp);
     router.post('/login', controller.userController.login);
     router.post('/logout', authentication, controller.userController.logout);
+    router.post('/deleteAccount', authentication, controller.userController.deleteAccount);
+    router.post("/contactUs", controller.userController.contactUs);
     router.patch('/updateProfile', authentication, controller.userController.updateProfile);
     router.post('/forgotPassword', controller.userController.forgotPassword);
     router.get('/resetPassword', forgotPasswordVerify, controller.userController.resetPassword);
@@ -27,6 +29,9 @@ module.exports=function(){
 
     router.post("/addCollection",authentication,controller.userController.addCollection)
     router.get("/collectionList",authentication,controller.userController.collectionList)
+
+    router.post("/addToMarketPlace",authentication,controller.userController.addToMarketPlace)
+    router.get("/marketPlaceList",authentication,controller.userController.marketPlaceList)
     return router
 }
 

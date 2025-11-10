@@ -13,6 +13,17 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
+      collectionId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        defaultValue: null,
+        references: {
+          model: "userCollection",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
       cardName: {
         type: DataTypes.STRING(255),
         allowNull: true,

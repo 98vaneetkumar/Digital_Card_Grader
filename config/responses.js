@@ -19,6 +19,7 @@ var success_msg = {
 
   otpResend: "OTP resent successfully",
   fetchSuccess:"Data fetched successfully",
+  contactUs:"Your message has been received. We will get back to you shortly.",
 };
 
 var failed_msg = {

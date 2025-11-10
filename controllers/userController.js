@@ -39,6 +39,9 @@ const rekognition = new RekognitionClient({
 
 const MODEL_ARN = process.env.MODEL_ARN;
 
+
+Models.userMarketPlaceModel.belongsTo(Models.userCardsModel, { foreignKey: 'cardId' });
+
 module.exports = {
   signUp: async (req, res) => {
     try {
@@ -322,6 +325,41 @@ module.exports = {
       );
     }
   },
+  deleteAccount: async (req, res) => {
+    try {
+      await Models.userModel.destroy({
+        where: { id: req.user.id },
+      });
+
+      return commonHelper.success(res, Response.success_msg.logout);
+    } catch (error) {
+      console.error("Logout error:", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.logoutErr,
+        error.message
+      );
+    }
+  },
+  contactUs: async (req, res) => {
+    try {
+      let objToSave = {
+        name: req.body.name,
+        email: req.body.email,
+        description: req.body.description,
+      };
+      await Models.contactUsModel.create(objToSave);
+
+      return commonHelper.success(res, Response.success_msg.contactUs);
+    } catch (error) {
+      console.error("Logout error:", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.logoutErr,
+        error.message
+      );
+    }
+  },
 
   updateProfile: async (req, res) => {
     try {
@@ -343,7 +381,9 @@ module.exports = {
       let updateProfile = {
         name: payload.name,
         bio: payload.bio,
-        profilePicture: payload.profilePicture ? payload.profilePicture : req.user.profilePicture,
+        profilePicture: payload.profilePicture
+          ? payload.profilePicture
+          : req.user.profilePicture,
       };
 
       await Models.userModel.update(updateProfile, {
@@ -524,7 +564,12 @@ module.exports = {
         return commonHelper.failed(res, "Failed to save uploaded card.", 500);
       }
 
-      const savedAbsolutePath = path.join(__dirname, "..", "public", savedRelativePath);
+      const savedAbsolutePath = path.join(
+        __dirname,
+        "..",
+        "public",
+        savedRelativePath
+      );
 
       // 2️⃣ LOAD CSV DATA
       const csvPath = path.join(__dirname, "..", "data", "all_cards.csv");
@@ -537,8 +582,10 @@ module.exports = {
       if (!grading.success) {
         let message = "Card not recognized.";
         if (grading.reason === "low_confidence") message = "Try clearer image.";
-        if (grading.reason === "no_borders") message = "Card not visually detected.";
-        if (grading.reason === "bad_aspect_ratio") message = "Image not card-like.";
+        if (grading.reason === "no_borders")
+          message = "Card not visually detected.";
+        if (grading.reason === "bad_aspect_ratio")
+          message = "Image not card-like.";
 
         console.log("🚫 Grading failed reason:", grading.reason);
         return commonHelper.failed(res, message, 400);
@@ -557,10 +604,18 @@ module.exports = {
         savedPath: savedRelativePath,
       };
 
-      return commonHelper.success(res, Response.success_msg.fetchSuccess, response);
+      return commonHelper.success(
+        res,
+        Response.success_msg.fetchSuccess,
+        response
+      );
     } catch (error) {
       console.error("Error during grading:", error);
-      return commonHelper.error(res, Response.error_msg.uplImgErr, error.message);
+      return commonHelper.error(
+        res,
+        Response.error_msg.uplImgErr,
+        error.message
+      );
     }
   },
 
@@ -576,6 +631,7 @@ module.exports = {
         surface,
         corners,
         overall,
+        collectionId,
       } = req.body;
 
       if (!imagePath) {
@@ -592,6 +648,7 @@ module.exports = {
         surface: Number(surface),
         corners: Number(corners),
         overall: Number(overall),
+        collectionId: collectionId || null,
       };
       const savedData = await Models.userCardsModel.create(imageData);
       return commonHelper.success(
@@ -657,27 +714,22 @@ module.exports = {
     }
   },
 
-  addCollection:async(req,res)=>{
+  addCollection: async (req, res) => {
     try {
-         if (req.files && req.files.image) {
+      if (req.files && req.files.image) {
         const file = req.files.image;
         const savedRelativePath = await commonHelper.fileUpload(file, "images");
         payload.imagePath = savedRelativePath;
       }
-      let objToSave={
-        imagePath:payload.imagePath,
-        cardName:payload.cardName,
-        cardType:payload.cardType,
-        userId:req.user.id
-      }
-      await Models.userCollectionModel.create(objToSave)
-         return commonHelper.success(
-        res,
-        "User cart collection add successfully",
-        
-      );
+      let objToSave = {
+        imagePath: payload.imagePath,
+        cardName: payload.cardName,
+        userId: req.user.id,
+      };
+      await Models.userCollectionModel.create(objToSave);
+      return commonHelper.success(res, "User cart collection add successfully");
     } catch (error) {
-       console.error("Error while fetching user cards:", error);
+      console.error("Error while fetching user cards:", error);
       return commonHelper.error(
         res,
         "Error while fetching user cards",
@@ -685,21 +737,88 @@ module.exports = {
       );
     }
   },
-  
-  collectionList:async(req,res)=>{
+
+  collectionList: async (req, res) => {
     try {
-      let result=await Models.userCollectionModel.findAll({
-        where:{
-          userId:req.user.id
-        }
-      })
-         return commonHelper.success(
+      let result = await Models.userCollectionModel.findAll({
+        where: {
+          userId: req.user.id,
+        },
+      });
+      return commonHelper.success(
         res,
         "User collection cards fetched successfully",
         result
       );
     } catch (error) {
-       console.error("Error while fetching user cards:", error);
+      console.error("Error while fetching user cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user cards",
+        error.message
+      );
+    }
+  },
+  addToMarketPlace: async (req, res) => {
+    try {
+      let objToSave = {
+        userId: req.user.id,
+        cardId: req.body.cardId,
+        price: req.body.price,
+        additionalNotes: req.body.additionalNotes,
+      };
+      await Models.userMarketPlaceModel.create(objToSave);
+      return commonHelper.success(
+        res,
+        "Card added to market place successfully"
+      );
+    } catch (error) {
+      console.error("Error while fetching user cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user cards",
+        error.message
+      );
+    }
+  },
+  marketPlaceList: async (req, res) => {
+    try {
+      let response = await Models.userMarketPlaceModel.findAll({
+        where: {
+          userId: req.user.id,
+        },
+        include: [
+          {
+            model: Models.userCardsModel,
+          },
+        ],
+      });
+      return commonHelper.success(
+        res,
+        "Market place cards fetched successfully",
+        response
+      );
+    } catch (error) {
+      console.error("Error while fetching user cards:", error);
+      return commonHelper.error(
+        res,
+        "Error while fetching user cards",
+        error.message
+      );
+    }
+  },
+  cardList: async (req, res) => {
+    try {
+      let response = await Models.userCardsModel.findAll({
+        where: {
+          colectionId: {
+            [Op.ne]: null,
+          },
+        },
+      });
+      return commonHelper.success(res, "Cards fetched successfully", response);
+    } catch (error) {
+      console.error("Error while fetching user cards:", error);
       return commonHelper.error(
         res,
         "Error while fetching user cards",
