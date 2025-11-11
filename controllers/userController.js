@@ -41,7 +41,7 @@ const MODEL_ARN = process.env.MODEL_ARN;
 
 
 Models.userMarketPlaceModel.belongsTo(Models.userCardsModel, { foreignKey: 'cardId' });
-
+Models.userCollectionModel.belongsTo(Models.userModel,{foreignKey:'userId'})
 module.exports = {
   signUp: async (req, res) => {
     try {
@@ -761,6 +761,9 @@ module.exports = {
         where: {
           userId: req.user.id,
         },
+        include:[{
+          model:Models.userModel
+        }]
       });
       return commonHelper.success(
         res,
