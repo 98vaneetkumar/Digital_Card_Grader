@@ -18,6 +18,7 @@ const { gradeCard } = require("../utils/grading.js");
 const { loadPokemonCSV } = require("../utils/csvLoader.js");
 const fs = require("fs");
 const path = require("path");
+const {Op}=require("sequelize");
 
 const {
   RekognitionClient,
