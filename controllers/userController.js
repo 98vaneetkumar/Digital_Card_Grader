@@ -843,7 +843,7 @@ module.exports = {
       if (req.query && req.query.collectionId) {
         response = await Models.userCardsModel.findAll({
           where: {
-            colectionId: req.query.collectionId,
+            collectionId: req.query.collectionId,
           },
         });
       } else {
