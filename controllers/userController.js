@@ -665,7 +665,7 @@ module.exports = {
         surface: Number(surface),
         corners: Number(corners),
         overall: Number(overall),
-        collectionId: collectionId || null,
+        collectionId: req.body&&req.body.collectionId || null,
       };
       const savedData = await Models.userCardsModel.create(imageData);
       return commonHelper.success(
@@ -736,11 +736,11 @@ module.exports = {
       if (req.files && req.files.image) {
         const file = req.files.image;
         const savedRelativePath = await commonHelper.fileUpload(file, "images");
-        payload.imagePath = savedRelativePath;
+        req.body.imagePath = savedRelativePath;
       }
       let objToSave = {
-        imagePath: payload.imagePath,
-        cardName: payload.cardName,
+        imagePath: req.body.imagePath,
+        cardName: req.body.cardName,
         userId: req.user.id,
       };
       await Models.userCollectionModel.create(objToSave);
