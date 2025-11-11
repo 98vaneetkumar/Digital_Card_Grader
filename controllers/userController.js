@@ -60,7 +60,7 @@ module.exports = {
         payload.password,
         process.env.SALT
       );
-   const customer = await stripe.customers.create({
+      const customer = await stripe.customers.create({
         description: "Digital Card",
         email: req.body.email,
       });
@@ -74,7 +74,7 @@ module.exports = {
         password: hashedPassword,
         deviceToken: payload.deviceToken,
         deviceType: payload.deviceType,
-        customerId:customerId
+        customerId: customerId,
       };
 
       let response = await Models.userModel.create(objToSave);
@@ -123,7 +123,7 @@ module.exports = {
       if (!isPasswordValid) {
         return commonHelper.failed(res, Response.failed_msg.invalidPassword);
       }
-      
+
       if (user && user.customerId == null) {
         const hashedPassword = await commonHelper.bcryptData(
           payload.password,
@@ -140,7 +140,7 @@ module.exports = {
           deviceToken: payload.deviceToken,
           deviceType: payload.deviceType,
           verifyStatus: 0,
-          customerId:user.customerId?user.customerId:customerId
+          customerId: user.customerId ? user.customerId : customerId,
         },
         {
           where: {
@@ -666,7 +666,7 @@ module.exports = {
         surface: Number(surface),
         corners: Number(corners),
         overall: Number(overall),
-        collectionId: req.body&&req.body.collectionId || null,
+        collectionId: (req.body && req.body.collectionId) || null,
       };
       const savedData = await Models.userCardsModel.create(imageData);
       return commonHelper.success(
@@ -762,9 +762,11 @@ module.exports = {
         where: {
           userId: req.user.id,
         },
-        include:[{
-          model:Models.userModel
-        }]
+        include: [
+          {
+            model: Models.userModel,
+          },
+        ],
       });
       return commonHelper.success(
         res,
@@ -830,13 +832,28 @@ module.exports = {
   },
   cardList: async (req, res) => {
     try {
-      let response = await Models.userCardsModel.findAll({
-        where: {
-          colectionId: {
-            [Op.ne]: null,
+      // let response = await Models.userCardsModel.findAll({
+      //   where: {
+      //     colectionId: {
+      //       [Op.ne]: null,
+      //     },
+      //   },
+      // });
+      let response;
+      if (req.query && req.query.collectionId) {
+        response = await Models.userCardsModel.findAll({
+          where: {
+            colectionId: req.query.collectionId,
           },
-        },
-      });
+        });
+      } else {
+        response = await Models.userCardsModel.findAll({
+          where: {
+            userId: req.user.id,
+          },
+        });
+      }
+
       return commonHelper.success(res, "Cards fetched successfully", response);
     } catch (error) {
       console.error("Error while fetching user cards:", error);
@@ -885,13 +902,13 @@ module.exports = {
       );
     }
   },
-  getProfile:async(req,res)=>{
+  getProfile: async (req, res) => {
     try {
       let response = await Models.userModel.findOne({
         where: {
           id: req.user.id,
         },
-        raw:true
+        raw: true,
       });
       return commonHelper.success(
         res,
@@ -907,7 +924,7 @@ module.exports = {
       );
     }
   },
-    paymentIntent: async (req, res) => {
+  paymentIntent: async (req, res) => {
     try {
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },

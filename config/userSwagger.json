@@ -667,7 +667,16 @@
             "Bearer": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+              {
+            "name": "collectionId",
+            "in": "query",
+            "description": "Enter the card name",
+            "required": false,
+            "type": "string",
+            "value": ""
+          }
+        ],
         "responses": {}
       }
     },
