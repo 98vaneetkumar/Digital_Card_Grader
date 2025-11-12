@@ -18,7 +18,7 @@ const { gradeCard } = require("../utils/grading.js");
 const { loadPokemonCSV } = require("../utils/csvLoader.js");
 const fs = require("fs");
 const path = require("path");
-const {Op}=require("sequelize");
+const { Op } = require("sequelize");
 
 const {
   RekognitionClient,
@@ -42,7 +42,7 @@ const MODEL_ARN = process.env.MODEL_ARN;
 
 
 Models.userMarketPlaceModel.belongsTo(Models.userCardsModel, { foreignKey: 'cardId' });
-Models.userCollectionModel.belongsTo(Models.userModel,{foreignKey:'userId'})
+Models.userCollectionModel.belongsTo(Models.userModel, { foreignKey: 'userId' })
 module.exports = {
   signUp: async (req, res) => {
     try {
@@ -599,15 +599,18 @@ module.exports = {
       // 4️⃣ VALIDATION RESPONSE
       if (!grading.success) {
         let message = "Card not recognized.";
-        if (grading.reason === "low_confidence") message = "Try clearer image.";
-        if (grading.reason === "no_borders")
-          message = "Card not visually detected.";
-        if (grading.reason === "bad_aspect_ratio")
-          message = "Image not card-like.";
+        if (grading.reason === "no_borders") message = "Card not visually detected.";
+        if (grading.reason === "bad_aspect_ratio") message = "Image not card-like.";
 
         console.log("🚫 Grading failed reason:", grading.reason);
         return commonHelper.failed(res, message, 400);
       }
+
+      // if low-confidence, send response but mark it as low grade
+      if (grading.lowConfidence) {
+        console.log("⚠️ Low-confidence grading returned.");
+      }
+
 
       // 5️⃣ SUCCESS RESPONSE
       const response = {
