@@ -644,6 +644,11 @@ module.exports = {
         cardType,
         additionalNotes,
         imagePath,
+        backImagePath,
+        backOverall,
+        backCorners,
+        backSurface,
+        backEdges,
         centering,
         edges,
         surface,
@@ -667,6 +672,12 @@ module.exports = {
         corners: Number(corners),
         overall: Number(overall),
         collectionId: (req.body && req.body.collectionId) || null,
+        backImagePath: backImagePath || null,
+        backCentering: Number(req.body.backCentering) || 0.0,
+        backEdges: Number(backEdges) || 0.0,
+        backSurface: Number(backSurface) || 0.0,
+        backCorners: Number(backCorners) || 0.0,
+        backOverall: Number(backOverall) || 0.0,
       };
       const savedData = await Models.userCardsModel.create(imageData);
       return commonHelper.success(

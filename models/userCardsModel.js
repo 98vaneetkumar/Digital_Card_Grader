@@ -41,6 +41,35 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         type: DataTypes.STRING(255),
         allowNull: true,
       },
+      backImagePath: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      backCentering: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue: 0.0,
+      },
+      backEdges: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue: 0.0,
+      },
+      backSurface: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue: 0.0,
+      },
+      backCorners: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue: 0.0,
+      },
+      backOverall: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue: 0.0,
+      },
       centering: {
         type: DataTypes.DOUBLE,
         allowNull: true,
