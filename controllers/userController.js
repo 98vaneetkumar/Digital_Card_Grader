@@ -565,6 +565,28 @@ module.exports = {
       );
     }
   },
+  packBuy: async (req, res) => {
+    try {
+      await Models.userModel.update({
+        packType: req.body.packType,
+      }, {
+        where: { id: req.user.id, }
+      });
+      // await Models.transactionsModel.create(objToSave);
+      let userDetail = await Models.userModel.findOne({
+        where: { id: req.user.id },
+        raw: true,
+      });
+      return commonHelper.success(res, "Pack bought successfully",userDetail);
+    } catch (error) {
+        console.error("Error during grading:", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.uplImgErr,
+        error.message
+      );
+    }
+  },
 
   // =========== card grade recognition =============
 
