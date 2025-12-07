@@ -19,29 +19,11 @@ const { loadPokemonCSV } = require("../utils/csvLoader.js");
 const fs = require("fs");
 const path = require("path");
 const { Op } = require("sequelize");
-
-const {
-  RekognitionClient,
-  DetectCustomLabelsCommand,
-} = require("@aws-sdk/client-rekognition");
-
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { v4: uuid } = require("uuid");
 
-const s3 = new S3Client({ region: process.env.AWS_REGION });
-
-const rekognition = new RekognitionClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
-
-const MODEL_ARN = process.env.MODEL_ARN;
-
-
 Models.userMarketPlaceModel.belongsTo(Models.userCardsModel, { foreignKey: 'cardId' });
+Models.userMarketPlaceModel.belongsTo(Models.userModel, { foreignKey: 'userId' });
+Models.userCardsModel.belongsTo(Models.userModel, { foreignKey: 'userId' });
 Models.userCollectionModel.belongsTo(Models.userModel, { foreignKey: 'userId' })
 module.exports = {
   signUp: async (req, res) => {
@@ -850,6 +832,9 @@ module.exports = {
           {
             model: Models.userCardsModel,
           },
+          {
+            model: Models.userModel,
+          }
         ],
       });
       return commonHelper.success(
@@ -881,12 +866,18 @@ module.exports = {
           where: {
             collectionId: req.query.collectionId,
           },
+          include:[{
+            model:Models.userModel
+          }]
         });
       } else {
         response = await Models.userCardsModel.findAll({
           where: {
             userId: req.user.id,
           },
+           include:[{
+            model:Models.userModel
+          }]
         });
       }
 
@@ -920,6 +911,9 @@ module.exports = {
             where: cardWhere, // Search inside userCards table
             required: true, // ensures only records that match are fetched
           },
+          {
+            model: Models.userModel,
+          }
         ],
         order: [["createdAt", "DESC"]],
       });
