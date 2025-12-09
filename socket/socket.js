@@ -69,8 +69,7 @@ module.exports = function (io) {
               as: "sender",
               attributes: [
                 "id",
-                "firstName",
-                "lastName",
+                "name",
                 "profilePicture",
                 "email",
               ],
@@ -80,8 +79,7 @@ module.exports = function (io) {
               as: "receiver",
               attributes: [
                 "id",
-                "firstName",
-                "lastName",
+                "name",
                 "profilePicture",
                 "email",
               ],
@@ -128,12 +126,12 @@ module.exports = function (io) {
               {
                 model: Models.userModel,
                 as: "sender",
-                attributes: ["id", "firstName", "lastName", "profilePicture"],
+                attributes: ["id", "name", "profilePicture"],
               },
               {
                 model: Models.userModel,
                 as: "receiver",
-                attributes: ["id", "firstName", "lastName", "profilePicture"],
+                attributes: ["id", "name","profilePicture"],
               },
             ],
             order: [["createdAt", "ASC"]], // Optional: sort by message time
@@ -232,8 +230,8 @@ module.exports = function (io) {
               as: "sender",
               attributes: [
                 "id",
-                "firstName",
-                "lastName",
+                "name",
+
                 "profilePicture",
                 "email",
               ],
@@ -243,8 +241,7 @@ module.exports = function (io) {
               as: "receiver",
               attributes: [
                 "id",
-                "firstName",
-                "lastName",
+                "name",
                 "profilePicture",
                 "email",
               ],
@@ -607,9 +604,9 @@ module.exports = function (io) {
               let objToSend={
                 senderId:String(data.senderId),
                 receiverId:String(data.receiverId),
-                // message:`${senderDetail.firstName} ${senderDetail.lastName} send you a message` ,
+                // message:`${senderDetail.name} ${senderDetail.lastName} send you a message` ,
                 message:String(data.message),
-                // title:`${senderDetail.firstName} ${senderDetail.lastName} send you a message` ,
+                // title:`${senderDetail.name} ${senderDetail.lastName} send you a message` ,
                 title: 'Edify',
                 keyId:String(getMsg.id)
               }
@@ -720,9 +717,9 @@ module.exports = function (io) {
               let objToSend={
                 senderId:String(data.senderId),
                 receiverId:String(data.receiverId),
-                // message:`${senderDetail.firstName} ${senderDetail.lastName} send you a message` ,
+                // message:`${senderDetail.name} ${senderDetail.lastName} send you a message` ,
                 message:String(data.message),
-                // title:`${senderDetail.firstName} ${senderDetail.lastName} send you a message` ,
+                // title:`${senderDetail.name} ${senderDetail.lastName} send you a message` ,
                 title: 'Edify',
                 keyId:String(getMsg.id)
               }
