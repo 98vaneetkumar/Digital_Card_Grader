@@ -39,6 +39,9 @@ module.exports=function(){
     router.get("/getProfile",authentication,controller.userController.getProfile)
     router.post("/paymentIntent",authentication,controller.userController.paymentIntent)
     router.post("/webHookFrontEnd",authentication,controller.userController.webHookFrontEnd)
+
+    router.post("/followUnfollow",authentication,controller.userController.followUnfollow)
+    router.post("/acceptReject",authentication,controller.userController.acceptReject)
     return router
 }
 

@@ -767,6 +767,63 @@
         ],
         "responses": {}
       }
+    },
+    "/users/followUnfollow": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-followUnfollow-post",
+        "tags": ["Application User"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "followingId",
+            "in": "formData",
+            "description": "Enter the followingId",
+            "required": false,
+            "type": "string",
+            "value": "1414"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/acceptReject": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-acceptReject-post",
+        "tags": ["Application User"],
+        "description": "",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "followingId",
+            "in": "formData",
+            "description": "Enter the followingId",
+            "required": false,
+            "type": "string",
+            "value": "1414"
+          },
+          {
+            "name": "action",
+            "in": "formData",
+            "description": "Enter the action 1-> accept, 2-> reject",
+            "required": false,
+            "enum": [1, 2],
+            "type": "number",
+            "value": ""
+          }
+        ],
+        "responses": {}
+      }
     }
   },
   "definitions": {}

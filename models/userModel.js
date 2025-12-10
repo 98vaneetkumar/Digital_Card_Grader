@@ -18,6 +18,11 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         allowNull: true,
         defaultValue: null  ,//0-> bronze,1-> silver,2-> gold
       },
+      myCredits:{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      }, 
       name: {
         type: DataTypes.STRING(50),
         allowNull: false,

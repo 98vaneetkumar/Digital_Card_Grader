@@ -941,6 +941,22 @@ module.exports = {
         },
         raw: true,
       });
+      let friendsCount = await Models.followingModel.count({
+        where: {
+          [Op.or]: [
+            {
+              followerId: req.query.userId,
+              isAccept: 1,
+            },
+            {
+              followingId: req.query.userId,
+              isAccept: 1,
+            },
+          ],
+        },
+      });
+
+      response.friendsCount = friendsCount;
       return commonHelper.success(
         res,
         "User profile fetched successfully",
@@ -1041,4 +1057,60 @@ module.exports = {
       );
     }
   },
+  followUnfollow:async(req,res)=>{
+    try {
+        const { followingId } = req.body; // The user to be followed
+      const followerId = req.user.id; // The logged-in user
+
+      // Check if already following
+      let existingFollow = await Models.followingModel.findOne({
+        where: { followerId, followingId },
+      });
+      if(existingFollow){
+        // Unfollow
+        await Models.followingModel.destroy({
+          where: { followerId, followingId },
+        });
+        return commonHelper.success(res, "Unfollowed successfully");
+      }else{
+        // Follow
+        await Models.followingModel.create({ followerId, followingId });
+        return commonHelper.success(res, "Followed successfully");
+      }
+    } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+    }
+  },
+  acceptReject:async(req,res)=>{
+   try {
+      const { followerId, action } = req.body; // The user who sent the follow request
+      const followingId = req.user.id; // The logged-in user
+      if(action==1){
+        // Accept follow request
+        await Models.followingModel.update(
+          { isAccept: 1 },
+          { where: { followerId, followingId } }
+        );
+        return commonHelper.success(res, "Follow request accepted");
+      }else if(action==2){
+        // Reject follow request
+        await Models.followingModel.destroy({
+          where: { followerId, followingId },
+        });
+        return commonHelper.success(res, "Follow request rejected");
+      }
+   } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+   } 
+  }
 };
