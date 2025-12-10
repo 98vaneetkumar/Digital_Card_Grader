@@ -778,7 +778,7 @@ module.exports = {
     try {
       let result = await Models.userCollectionModel.findAll({
         where: {
-          userId: req.user.id,
+          userId: req.query.userId,
         },
         include: [
           {
@@ -826,7 +826,7 @@ module.exports = {
     try {
       let response = await Models.userMarketPlaceModel.findAll({
         where: {
-          userId: req.user.id,
+          userId: req.query.userId,
         },
         include: [
           {
@@ -865,6 +865,7 @@ module.exports = {
         response = await Models.userCardsModel.findAll({
           where: {
             collectionId: req.query.collectionId,
+            userId: req.query.userId,
           },
           include:[{
             model:Models.userModel
@@ -936,7 +937,7 @@ module.exports = {
     try {
       let response = await Models.userModel.findOne({
         where: {
-          id: req.user.id,
+          id: req.query.userId,
         },
         raw: true,
       });
