@@ -955,8 +955,25 @@ module.exports = {
           ],
         },
       });
+      let isFollow = await Models.followingModel.findOne({
+        where: {
+          [Op.or]: [
+            {
+              followerId: req.query.userId,
+              followingId: req.user.id,
+              isAccept: 1,
+            },
+            {
+              followingId: req.query.userId,
+              followerId: req.user.id,
+              isAccept: 1,
+            },
+          ],
+        },
+      });
 
       response.friendsCount = friendsCount;
+      response.isFollow = isFollow ? 1 : 0;
       return commonHelper.success(
         res,
         "User profile fetched successfully",
@@ -1071,11 +1088,11 @@ module.exports = {
         await Models.followingModel.destroy({
           where: { followerId, followingId },
         });
-        return commonHelper.success(res, "Unfollowed successfully");
+        return commonHelper.success(res, "Unfollowed successfully",isFollow=0);
       }else{
         // Follow
         await Models.followingModel.create({ followerId, followingId });
-        return commonHelper.success(res, "Followed successfully");
+        return commonHelper.success(res, "Followed successfully",isFollow=1);
       }
     } catch (error) {
       console.log("error", error);
