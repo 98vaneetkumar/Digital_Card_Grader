@@ -1091,7 +1091,7 @@ module.exports = {
         return commonHelper.success(res, "Unfollowed successfully",isFollow=0);
       }else{
         // Follow
-        await Models.followingModel.create({ followerId, followingId });
+        await Models.followingModel.create({ followerId, followingId ,isAccept:1});
         return commonHelper.success(res, "Followed successfully",isFollow=1);
       }
     } catch (error) {
