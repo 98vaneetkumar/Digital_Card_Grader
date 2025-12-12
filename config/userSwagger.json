@@ -768,7 +768,7 @@
         "responses": {}
       }
     },
-    "/users/followUnfillowUser": {
+    "/users/followUnfollowUser": {
       "post": {
         "x-swagger-router-controller": "middleware-name1",
         "operationId": "users-followUnfollow-post",
