@@ -9,6 +9,7 @@ module.exports = {
   authentication: async (req, res, next) => {
     let token = req.headers["authorization"];
     token = token.startsWith("Bearer ") ? token.split(" ")[1] : token;
+    console.log("Auth Token:", token);
     if (token) {
       jwt.verify(token, secretKey, async (err, authData) => {
         if (err) {
