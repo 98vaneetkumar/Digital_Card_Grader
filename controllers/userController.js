@@ -1078,7 +1078,7 @@ module.exports = {
     try {
         const { followingId } = req.body; // The user to be followed
       const followerId = req.user.id; // The logged-in user
-
+     let isFollow;
       // Check if already following
       let existingFollow = await Models.followingModel.findOne({
         where: { followerId, followingId },
@@ -1088,11 +1088,11 @@ module.exports = {
         await Models.followingModel.destroy({
           where: { followerId, followingId },
         });
-        return commonHelper.success(res, "Unfollowed successfully",isFollow=0);
+        return commonHelper.success(res, "Unfollowed successfully",{isFollow:0});
       }else{
         // Follow
         await Models.followingModel.create({ followerId, followingId ,isAccept:1});
-        return commonHelper.success(res, "Followed successfully",isFollow=1);
+        return commonHelper.success(res, "Followed successfully",{isFollow:1});
       }
     } catch (error) {
       console.log("error", error);
