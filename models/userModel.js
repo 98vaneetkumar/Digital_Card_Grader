@@ -23,6 +23,16 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0,
       }, 
+      hasLimited :{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      packUsed :{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
       name: {
         type: DataTypes.STRING(50),
         allowNull: false,

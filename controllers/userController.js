@@ -1129,5 +1129,26 @@ module.exports = {
         error.message
       );
    } 
+  },
+  limitedBorder:async(req,res)=>{
+    try {
+        const { hasLimited } = req.body;
+      await Models.userModel.update(
+        { hasLimited: hasLimited ,packUsed :1},
+        { where: { id: req.user.id } }
+      );
+      let userDetail = await Models.userModel.findOne({
+        where: { id: req.user.id },
+        raw: true,
+      });
+      return commonHelper.success(res, "User limit updated successfully",userDetail);
+    } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+    }
   }
 };
