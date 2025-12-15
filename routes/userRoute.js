@@ -43,7 +43,7 @@ module.exports=function(){
     router.post("/followUnfollowUser",authentication,controller.userController.followUnfollow)
     router.post("/acceptReject",authentication,controller.userController.acceptReject)
 
-    router.post("/limitedBorder ",authentication,controller.userController.limitedBorder )
+    router.post("/limitedBorder",authentication,controller.userController.limitedBorder )
     return router
 }
 
