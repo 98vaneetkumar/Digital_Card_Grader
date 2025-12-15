@@ -303,13 +303,13 @@ module.exports = {
   logout: async (req, res) => {
     try {
       const schema = Joi.object().keys({
-        deviceToken: Joi.string().required(),
+        deviceToken: Joi.string().optional(),
         deviceType: Joi.string().optional(),
       });
 
       let payload = await helper.validationJoi(req.body, schema);
 
-      let logoutDetail = { deviceToken: payload.deviceToken };
+      let logoutDetail = { deviceToken: null, deviceType: null };
 
       await Models.userModel.update(logoutDetail, {
         where: { id: req.user.id },
