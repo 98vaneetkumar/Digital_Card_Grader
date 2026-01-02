@@ -1154,7 +1154,7 @@ module.exports = {
       await Models.packBuyUser.update({
         packUsed :1,
       }, {
-        where: { userId: req.user.id,packUsed:0 }
+        where: { userId: req.user.id,id:req.body.packBuyId },
       })
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },
