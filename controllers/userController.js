@@ -25,6 +25,7 @@ Models.userMarketPlaceModel.belongsTo(Models.userCardsModel, { foreignKey: 'card
 Models.userMarketPlaceModel.belongsTo(Models.userModel, { foreignKey: 'userId' });
 Models.userCardsModel.belongsTo(Models.userModel, { foreignKey: 'userId' });
 Models.userCollectionModel.belongsTo(Models.userModel, { foreignKey: 'userId' })
+Models.userModel.hasMany(Models.packBuyUser, { foreignKey: 'userId' });
 module.exports = {
   signUp: async (req, res) => {
     try {
@@ -549,15 +550,17 @@ module.exports = {
   },
   packBuy: async (req, res) => {
     try {
-      await Models.userModel.update({
+      await Models.packBuyUser.create({
         packType: req.body.packType,
-      }, {
-        where: { id: req.user.id, }
-      });
+        userId: req.user.id,
+      }, 
+    );
       // await Models.transactionsModel.create(objToSave);
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },
-        raw: true,
+        include:[{
+          model:Models.packBuyUser,
+        }]
       });
       return commonHelper.success(res, "Pack bought successfully",userDetail);
     } catch (error) {
@@ -971,13 +974,24 @@ module.exports = {
           ],
         },
       });
+      let packBuyList=await Models.packBuyUser.findAll({
+        where:{
+          userId:req.query.userId,
+          packUsed:0,
+        },
+        raw:true,
+      });
 
       response.friendsCount = friendsCount;
       response.isFollow = isFollow ? 1 : 0;
+      let objToSend={
+        response:response,
+        packBuyList:packBuyList,
+      }
       return commonHelper.success(
         res,
         "User profile fetched successfully",
-        response
+        objToSend
       );
     } catch (error) {
       console.error("Error while fetching user profile:", error);
@@ -1134,9 +1148,14 @@ module.exports = {
     try {
         const { hasLimited } = req.body;
       await Models.userModel.update(
-        { hasLimited: hasLimited ,packUsed :1},
+        { hasLimited: hasLimited },
         { where: { id: req.user.id } }
       );
+      await Models.packBuyUser.update({
+        packUsed :1,
+      }, {
+        where: { userId: req.user.id,packUsed:0 }
+      })
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },
         raw: true,

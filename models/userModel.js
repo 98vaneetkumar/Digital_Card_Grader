@@ -13,22 +13,12 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         allowNull: true,
         defaultValue: null  ,
       },
-      packType:{
-        type: DataTypes.STRING(100),
-        allowNull: true,
-        defaultValue: null  ,//0-> bronze,1-> silver,2-> gold
-      },
       myCredits:{
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
       }, 
       hasLimited :{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-      },
-      packUsed :{
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
