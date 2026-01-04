@@ -563,6 +563,8 @@ module.exports = {
     }else if(req.body.packType==3){
       myCredits+=100
     }
+    console.log("mycrdeit",myCredits)
+    console.log("reqw.body",req.body)
     await Models.userModel.update({
        myCredits:myCredits
     },{
