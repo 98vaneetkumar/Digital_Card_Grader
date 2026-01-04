@@ -892,6 +892,7 @@ module.exports = {
       //     },
       //   },
       // });
+      console.log("reqw.query",req.query)
       let response;
       if (req.query && req.query.collectionId) {
         response = await Models.userCardsModel.findAll({
