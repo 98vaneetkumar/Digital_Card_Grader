@@ -687,6 +687,9 @@ module.exports = {
       if (!imagePath) {
         return commonHelper.failed(res, "Image path is required");
       }
+      if(req.user&&req.user.myCredits<=0){
+        return commonHelper.failed(res, "You have no credits to save the card. Please buy pack to get more credits.");
+      }
       const imageData = {
         userId: req.user.id,
         cardName: cardName || null,
