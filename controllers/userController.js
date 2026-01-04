@@ -555,6 +555,21 @@ module.exports = {
         userId: req.user.id,
       }, 
     );
+    let myCredits= req.user.myCredits
+    if(req.body.packType==1){
+      myCredits+=10
+    }else if(req.body.packType==2){
+      myCredits+=20
+    }else if(req.body.packType==3){
+      myCredits+=100
+    }
+    await Models.userModel.update({
+       myCredits:myCredits
+    },{
+      where:{
+        id:req.user.id
+      }
+    })
       // await Models.transactionsModel.create(objToSave);
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },
@@ -690,6 +705,15 @@ module.exports = {
         backOverall: Number(backOverall) || 0.0,
       };
       const savedData = await Models.userCardsModel.create(imageData);
+      let myCredits= req.user.myCredits
+      let leftCredits= myCredits-1
+      await Models.userModel.update({
+        myCredits:leftCredits
+      },{
+        where:{
+          id:req.user.id
+        }
+      })
       return commonHelper.success(
         res,
         "Image data saved successfully",
