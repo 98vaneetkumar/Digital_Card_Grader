@@ -556,11 +556,11 @@ module.exports = {
       }, 
     );
     let myCredits= req.user.myCredits
-    if(req.body.packType==1){
+    if(req.body.packType==0){
       myCredits+=10
-    }else if(req.body.packType==2){
+    }else if(req.body.packType==1){
       myCredits+=20
-    }else if(req.body.packType==3){
+    }else if(req.body.packType==2){
       myCredits+=100
     }
     console.log("mycrdeit",myCredits)
