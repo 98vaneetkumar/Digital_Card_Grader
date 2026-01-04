@@ -1173,7 +1173,7 @@ module.exports = {
         const { hasLimited } = req.body;
       await Models.userCardsModel.update(
         { hasLimited: hasLimited },
-        { where: { cardId:req.body.cardId } }
+        { where: { id:req.body.cardId } }
       );
     
       await Models.packBuyUser.update({
