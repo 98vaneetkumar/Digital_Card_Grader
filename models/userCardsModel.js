@@ -24,6 +24,11 @@ module.exports = (Sequelize, sequelize, DataTypes) => {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
+      hasLimited:{
+        type:DataTypes.INTEGER,
+        allowNull:true,
+        defaultValue:0 //0: no, 1: yes
+      },
       cardName: {
         type: DataTypes.STRING(255),
         allowNull: true,

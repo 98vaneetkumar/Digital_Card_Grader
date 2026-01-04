@@ -1147,10 +1147,11 @@ module.exports = {
   limitedBorder:async(req,res)=>{
     try {
         const { hasLimited } = req.body;
-      await Models.userModel.update(
+      await Models.userCardsModel.update(
         { hasLimited: hasLimited },
-        { where: { id: req.user.id } }
+        { where: { cardId:req.body.cardId } }
       );
+    
       await Models.packBuyUser.update({
         packUsed :1,
       }, {
