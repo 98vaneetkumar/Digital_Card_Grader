@@ -901,7 +901,7 @@ module.exports = {
       } else {
         response = await Models.userCardsModel.findAll({
           where: {
-            userId: req.user.id,
+            userId: req.query.userId,
           },
            include:[{
             model:Models.userModel
