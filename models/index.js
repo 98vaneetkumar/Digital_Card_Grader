@@ -15,4 +15,5 @@ module.exports = {
   transactionsModel: require("./transactionModel")(Sequelize, sequelize, Sequelize.DataTypes),
   followingModel: require("./followingModel")(Sequelize, sequelize, Sequelize.DataTypes),
   packBuyUser: require("./packBuyUser")(Sequelize, sequelize, Sequelize.DataTypes),
+  inventroyModel:require("./inventroyModel")(Sequelize, sequelize, Sequelize.DataTypes),
 };

@@ -44,6 +44,8 @@ module.exports=function(){
     router.post("/acceptReject",authentication,controller.userController.acceptReject)
 
     router.post("/limitedBorder",authentication,controller.userController.limitedBorder )
+    router.post("/addInventory",authentication,controller.userController.addInventory)
+    router.get("/getInventroyList",authentication,controller.userController.getInventroyList )
     return router
 }
 

@@ -1182,11 +1182,11 @@ module.exports = {
         { where: { id:req.body.cardId } }
       );
     
-      await Models.packBuyUser.update({
-        packUsed :1,
-      }, {
-        where: { userId: req.user.id,id:req.body.packBuyId },
-      })
+      // await Models.packBuyUser.update({
+      //   packUsed :1,
+      // }, {
+      //   where: { userId: req.user.id,id:req.body.packBuyId },
+      // })
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },
         raw: true,
@@ -1200,5 +1200,44 @@ module.exports = {
         error.message
       );
     }
+  },
+  addInventory:async(req,res)=>{
+    try {
+      let objToSave={
+        userId:req.user.id,
+        name :"Limited Border",
+      }
+      await Models.inventroyModel.create(objToSave);
+      return commonHelper.success(res, "Inventory added successfully");
+    } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+    }
+  },
+  getInventroyList:async(req,res)=>{
+    try {
+      let response = await Models.inventroyModel.findAll({
+        where: {
+          userId: req.user.id,
+        },
+      });
+      return commonHelper.success(
+        res,
+        "Inventory fetched successfully",
+        response
+      );
+    } catch (error) {
+      console.log("error", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.internalServerError,
+        error.message
+      );
+    }
   }
+
 };
