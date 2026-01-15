@@ -1181,7 +1181,19 @@ module.exports = {
         { hasLimited: hasLimited },
         { where: { id:req.body.cardId } }
       );
-    
+      let findInventry=await Models.inventroyModel.findOne({
+        where:{
+          userId:req.user.id,
+          isUsed:0
+        },raw:true
+      })
+      await Models.inventroyModel.update({
+        isUsed:1
+      },{
+        where:{
+          id:findInventry.id
+        }
+      })
       // await Models.packBuyUser.update({
       //   packUsed :1,
       // }, {
@@ -1223,6 +1235,7 @@ module.exports = {
       let response = await Models.inventroyModel.findAll({
         where: {
           userId: req.user.id,
+          isUsed:0
         },
       });
       return commonHelper.success(
