@@ -2,16 +2,22 @@ const fs = require("fs");
 const csv = require("csv-parser");
 
 let cachedPokemonData = null;
+let cachedMtime = null;
 
 /**
- * Load & cache Pokémon CSV (loads only once)
+ * Load & cache Pokémon CSV
+ * Auto-reloads when CSV file is updated
  */
 async function loadPokemonCSV(csvPath) {
-  // ✅ Return cached data if already loaded
-  if (cachedPokemonData) {
+  // 🔍 Get last modified time of CSV
+  const { mtimeMs } = fs.statSync(csvPath);
+
+  // ✅ Use cache only if file has NOT changed
+  if (cachedPokemonData && cachedMtime === mtimeMs) {
     return cachedPokemonData;
   }
 
+  // 🔄 CSV is new or updated → reload
   return new Promise((resolve, reject) => {
     const results = [];
 
@@ -29,7 +35,7 @@ async function loadPokemonCSV(csvPath) {
             typeof value === "string" ? value.trim() : value;
         }
 
-        // 🔥 Precompute lowercase name for faster matching
+        // 🔥 Precompute lowercase name for fast OCR matching
         if (normalized.Name) {
           normalized._nameLower = normalized.Name.toLowerCase();
         }
@@ -38,7 +44,9 @@ async function loadPokemonCSV(csvPath) {
       })
       .on("end", () => {
         cachedPokemonData = results;
-        console.log(`📄 Pokémon CSV cached (${results.length} rows)`);
+        cachedMtime = mtimeMs;
+
+        console.log(`🔄 Pokémon CSV loaded (${results.length} rows)`);
         resolve(results);
       })
       .on("error", (err) => {
