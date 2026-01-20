@@ -16,8 +16,6 @@ const Models = require("../models/index");
 const Response = require("../config/responses.js");
 const { gradeCard } = require("../utils/grading.js");
 const { loadPokemonCSV } = require("../utils/csvLoader.js");
-const getPokemonData = require("../utils/pokemonCache");
-
 const fs = require("fs");
 const path = require("path");
 const { Op } = require("sequelize");
@@ -596,13 +594,13 @@ module.exports = {
 
   uploadAndGrade: async (req, res) => {
     try {
-      if (!req.files?.card) {
+      if (!req.files || !req.files.card) {
         return commonHelper.failed(res, "No card image uploaded.", 400);
       }
 
       const file = req.files.card;
 
-      // Save image
+      // 1️⃣ SAVE FILE LOCALLY
       const savedRelativePath = await commonHelper.fileUpload(file, "images");
       if (!savedRelativePath) {
         return commonHelper.failed(res, "Failed to save uploaded card.", 500);
@@ -615,31 +613,54 @@ module.exports = {
         savedRelativePath
       );
 
-      // Load cached Pokémon data
-      const pokemonData = await getPokemonData();
+      // 2️⃣ LOAD CSV DATA
+      const csvPath = path.join(__dirname, "..", "data", "all_cards.csv");
+      const pokemonData = await loadPokemonCSV(csvPath);
 
-      // Grade
+      // 3️⃣ GRADE CARD
       const grading = await gradeCard(savedAbsolutePath, pokemonData);
 
+      // 4️⃣ VALIDATION RESPONSE
       if (!grading.success) {
-        return commonHelper.failed(res, "Card not recognized.", 400);
+        let message = "Card not recognized.";
+        if (grading.reason === "no_borders") message = "Card not visually detected.";
+        if (grading.reason === "bad_aspect_ratio") message = "Image not card-like.";
+
+        console.log("🚫 Grading failed reason:", grading.reason);
+        return commonHelper.failed(res, message, 400);
       }
 
-      return commonHelper.success(res, "Grading successful", {
+      // if low-confidence, send response but mark it as low grade
+      if (grading.lowConfidence) {
+        console.log("⚠️ Low-confidence grading returned.");
+      }
+
+
+      // 5️⃣ SUCCESS RESPONSE
+      const response = {
         scores: {
-          centering: +grading.centering,
-          edges: +grading.edges,
-          surface: +grading.surface,
-          corners: +grading.corners,
-          overall: +grading.overall,
+          centering: parseFloat(grading.centering),
+          edges: parseFloat(grading.edges),
+          surface: parseFloat(grading.surface),
+          corners: parseFloat(grading.corners),
+          overall: parseFloat(grading.overall),
         },
         pokemon: grading.pokemon,
         savedPath: savedRelativePath,
-        lowConfidence: grading.lowConfidence || false,
-      });
+      };
+
+      return commonHelper.success(
+        res,
+        Response.success_msg.fetchSuccess,
+        response
+      );
     } catch (error) {
-      console.error("❌ Upload grading error:", error);
-      return commonHelper.error(res, "Failed to grade image", error.message);
+      console.error("Error during grading:", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.uplImgErr,
+        error.message
+      );
     }
   },
 
