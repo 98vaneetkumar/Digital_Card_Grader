@@ -1,5 +1,6 @@
 const sharp = require("sharp");
 const Tesseract = require("tesseract.js");
+const crypto = require("crypto");
 const path = require("path");
 
 // 🔥 round to .25 steps
@@ -7,9 +8,41 @@ const roundToQuarter = (num) => {
   return (Math.round(num * 4) / 4).toFixed(2);
 };
 
+// ===== SEEDED PRNG (Mulberry32) =====
+// Same seed → same sequence of "random" numbers every time
+const createSeededRandom = (seed) => {
+  let s = seed >>> 0; // ensure unsigned 32-bit int
+  return () => {
+    s |= 0;
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+// ===== HASH IMAGE → numeric seed =====
+const getImageSeed = async (imagePath) => {
+  // Sample a fixed-size thumbnail so minor EXIF/metadata changes don't matter
+  const buffer = await sharp(imagePath)
+    .resize(64, 64, { fit: "fill" })
+    .greyscale()
+    .raw()
+    .toBuffer();
+
+  const hash = crypto.createHash("sha256").update(buffer).digest("hex");
+  // Take first 8 hex chars → 32-bit integer seed
+  return parseInt(hash.slice(0, 8), 16);
+};
+
 async function gradeCard(imagePath, pokemonData = []) {
   try {
     console.log("📌 Grading card:", imagePath);
+
+    // ===== 0️⃣ DETERMINISTIC SEED FROM IMAGE =====
+    const seed = await getImageSeed(imagePath);
+    const rand = createSeededRandom(seed);
+    console.log(`🎲 Seed: ${seed}`);
 
     // ===== 1️⃣ IMAGE METADATA =====
     const image = sharp(imagePath);
@@ -22,24 +55,24 @@ async function gradeCard(imagePath, pokemonData = []) {
       return { success: false, reason: "bad_aspect_ratio" };
     }
 
-    // ===== 2️⃣ OCR (FIXED AVIF ISSUE) =====
+    // ===== 2️⃣ OCR =====
     const cropHeight = Math.floor(height * 0.25);
 
     const buffer = await sharp(imagePath)
       .extract({ left: 0, top: 0, width, height: cropHeight })
       .greyscale()
       .normalize()
-      .jpeg() // 🔥 FIX: convert ANY format → jpeg
+      .jpeg()
       .toBuffer();
 
     let result;
     try {
       result = await Tesseract.recognize(buffer, "eng", {
         langPath: path.join(__dirname, "..", "tessdata"),
-        logger: () => { },
+        logger: () => {},
       });
     } catch (err) {
-      console.log("⚠️ OCR failed, using fallback grading");
+      console.log("⚠️ OCR failed, using deterministic fallback grading");
 
       return {
         success: true,
@@ -58,20 +91,21 @@ async function gradeCard(imagePath, pokemonData = []) {
 
     console.log(`🔍 OCR text: "${text}" (conf: ${confidence})`);
 
-    // ===== 3️⃣ LOW CONFIDENCE =====
+    // ===== 3️⃣ LOW CONFIDENCE — now deterministic =====
     if (confidence < 45 || lettersOnly.length < 5) {
       const fallbackGrades = {
-        edges: roundToQuarter(7 + Math.random() * 2),
-        centering: roundToQuarter(7 + Math.random() * 2),
-        surface: roundToQuarter(7.5 + Math.random() * 1.5),
-        corners: roundToQuarter(7 + Math.random() * 2),
+        edges: roundToQuarter(7 + rand() * 2),           // was Math.random()
+        centering: roundToQuarter(7 + rand() * 2),
+        surface: roundToQuarter(7.5 + rand() * 1.5),
+        corners: roundToQuarter(7 + rand() * 2),
       };
 
       const overall = roundToQuarter(
         (parseFloat(fallbackGrades.edges) +
           parseFloat(fallbackGrades.centering) +
           parseFloat(fallbackGrades.surface) +
-          parseFloat(fallbackGrades.corners)) / 4
+          parseFloat(fallbackGrades.corners)) /
+          4
       );
 
       return {
@@ -103,13 +137,18 @@ async function gradeCard(imagePath, pokemonData = []) {
 
     // ===== 6️⃣ EDGE DETECTION =====
     const grayImage = sharp(imagePath).greyscale();
-    const { data, info } = await grayImage.raw().toBuffer({ resolveWithObject: true });
+    const { data, info } = await grayImage
+      .raw()
+      .toBuffer({ resolveWithObject: true });
 
     const pixels = data;
     const w = info.width;
     const h = info.height;
 
-    let minX = w, minY = h, maxX = 0, maxY = 0;
+    let minX = w,
+      minY = h,
+      maxX = 0,
+      maxY = 0;
     const threshold = 200;
 
     for (let y = 0; y < h; y++) {
@@ -129,7 +168,8 @@ async function gradeCard(imagePath, pokemonData = []) {
     }
 
     // ===== 7️⃣ EDGE SCORE =====
-    let lapSum = 0, lapCount = 0;
+    let lapSum = 0,
+      lapCount = 0;
 
     for (let y = minY + 1; y < maxY - 1; y++) {
       for (let x = minX + 1; x < maxX - 1; x++) {
@@ -150,16 +190,17 @@ async function gradeCard(imagePath, pokemonData = []) {
     const normalized = Math.max(0, Math.min(100, rawEdge / 15));
     const edgeScore = roundToQuarter(7 + (1 - normalized / 100) * 3);
 
-    // ===== 8️⃣ OTHER SCORES =====
-    const centering = roundToQuarter(8.0 + Math.random() * 1.5);
-    const surface = roundToQuarter(8.5 + Math.random() * 1.0);
-    const corners = roundToQuarter(8.2 + Math.random() * 1.3);
+    // ===== 8️⃣ OTHER SCORES — now deterministic =====
+    const centering = roundToQuarter(8.0 + rand() * 1.5);  // was Math.random()
+    const surface = roundToQuarter(8.5 + rand() * 1.0);
+    const corners = roundToQuarter(8.2 + rand() * 1.3);
 
     const overall = roundToQuarter(
       (parseFloat(edgeScore) +
         parseFloat(centering) +
         parseFloat(surface) +
-        parseFloat(corners)) / 4
+        parseFloat(corners)) /
+        4
     );
 
     return {
@@ -171,7 +212,6 @@ async function gradeCard(imagePath, pokemonData = []) {
       corners,
       overall,
     };
-
   } catch (err) {
     console.error("❌ Error grading card:", err.message);
     return { success: false, reason: "internal_error" };
