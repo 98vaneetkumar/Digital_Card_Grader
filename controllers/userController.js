@@ -2,6 +2,8 @@
 
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
+const FormData = require("form-data");
 const bcrypt = require("bcrypt");
 // const otpManager = require("node-twillo-otp-manager")(
 //   process.env.TWILIO_ACCOUNT_SID,
@@ -20,7 +22,7 @@ const fs = require("fs");
 const path = require("path");
 const { Op } = require("sequelize");
 const { v4: uuid } = require("uuid");
-
+const GRADER_API = 'http://localhost:8000/grade';
 Models.userMarketPlaceModel.belongsTo(Models.userCardsModel, { foreignKey: 'cardId' });
 Models.userMarketPlaceModel.belongsTo(Models.userModel, { foreignKey: 'userId' });
 Models.userCardsModel.belongsTo(Models.userModel, { foreignKey: 'userId' });
@@ -1255,40 +1257,45 @@ module.exports = {
 
 
 
-  grade: async (req, res) => {
+grade: async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+      // console.log("req.file",req.files)
+       if (!req.files || !req.files.card) {
+        return commonHelper.failed(res, "No card image uploaded.", 400);
+      }
+      const uploadedCard = req.files.card;
+      const savedRelativePath = await commonHelper.fileUpload(uploadedCard, "images");
+      const savedAbsolutePath = path.join(
+        __dirname,
+        "..",
+        "public",
+        savedRelativePath
+      );
+      // Read the uploaded file
+      const fileBuffer = fs.readFileSync(savedAbsolutePath);
+
+      // FastAPI expects multipart/form-data with field name "file"
+      const form = new FormData();
+      form.append("file", fileBuffer, {
+        filename: uploadedCard.name || path.basename(savedAbsolutePath),
+        contentType: uploadedCard.mimetype || "image/jpeg",
+      });
+
+      if (req.body && req.body.pokemon) {
+        form.append("pokemon", req.body.pokemon);
       }
 
-      // Read the uploaded file
-      const fileBuffer = fs.readFileSync(req.file.path);
-
       // Call Python grading API
-      const response = await axios.post(GRADER_API, fileBuffer, {
+      const response = await axios.post(GRADER_API, form, {
         headers: {
-          'Content-Type': 'application/octet-stream'
+          ...form.getHeaders(),
         },
-        maxContentLength: 50 * 1024 * 1024
+        maxContentLength: 50 * 1024 * 1024,
+        maxBodyLength: 50 * 1024 * 1024,
       });
 
       // Extract grade data
       const gradeData = response.data;
-
-      // Save card info to database with grade
-      const cardInfo = {
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        grade: gradeData.grade,
-        condition: gradeData.condition,
-        quality_score: gradeData.quality_score,
-        issues: gradeData.issues,
-        recommendation: gradeData.recommendation,
-        explanation: gradeData.explanation,
-        timestamp: new Date(),
-        path: `/uploads/${req.file.filename}`
-      };
-
       // Save to database (example - adjust for your DB)
       // await CardGrade.create(cardInfo);
 
@@ -1300,7 +1307,12 @@ module.exports = {
         success: true,
         grade: gradeData.grade,
         condition: gradeData.condition,
-        quality_score: gradeData.quality_score,
+        overall: gradeData.overall,
+        centering: gradeData.centering,
+        edges: gradeData.edges,
+        surface: gradeData.surface,
+        corners: gradeData.corners,
+        pokemon: gradeData.pokemon,
         issues: gradeData.issues,
         recommendation: gradeData.recommendation,
         message: `Card graded: ${gradeData.grade}/10 - ${gradeData.condition}`
@@ -1314,9 +1326,9 @@ module.exports = {
         fs.unlinkSync(req.file.path);
       }
 
-      res.status(500).json({
+      res.status(error.response?.status || 500).json({
         error: 'Failed to grade card',
-        details: error.message
+        details: error.response?.data || error.message
       });
     }
   },

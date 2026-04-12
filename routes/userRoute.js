@@ -48,7 +48,7 @@ module.exports=function(){
     router.get("/getInventroyList",authentication,controller.userController.getInventroyList )
 
 
-    router.post('/grade', controller.userController.uploadAndGrade);
+    router.post('/grade', controller.userController.grade);
 
 
 

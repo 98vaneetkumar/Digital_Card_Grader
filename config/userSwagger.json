@@ -824,6 +824,27 @@
         ],
         "responses": {}
       }
+    },
+    "/users/grade": {
+      "post": {
+        "x-swagger-router-controller": "middleware-name1",
+        "operationId": "users-grade-post",
+        "tags": ["Application User Card Grading"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "card",
+            "in": "formData",
+            "description": "card to upload",
+            "required": false,
+            "type": "file",
+            "format": "binary",
+            "maxLength": 5242880,
+            "allowedMimeTypes": ["image/jpeg", "image/png"]
+          }
+        ],
+        "responses": {}
+      }
     }
   },
   "definitions": {}

@@ -11,6 +11,7 @@
   "type": "commonjs",
   "dependencies": {
     "@techstark/opencv-js": "^4.11.0-release.1",
+    "axios": "^1.15.0",
     "bcrypt": "^5.1.1",
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.7",
@@ -23,6 +24,7 @@
     "express-fileupload": "^1.5.1",
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.2",
+    "form-data": "^4.0.5",
     "helmet": "^8.1.0",
     "http-errors": "^2.0.0",
     "joi": "^17.13.3",
