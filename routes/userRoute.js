@@ -46,6 +46,12 @@ module.exports=function(){
     router.post("/limitedBorder",authentication,controller.userController.limitedBorder )
     router.post("/addInventory",authentication,controller.userController.addInventory)
     router.get("/getInventroyList",authentication,controller.userController.getInventroyList )
+
+
+    router.post('/grade', controller.userController.uploadAndGrade);
+
+
+
     return router
 }
 

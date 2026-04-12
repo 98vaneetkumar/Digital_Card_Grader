@@ -553,35 +553,35 @@ module.exports = {
       await Models.packBuyUser.create({
         packType: req.body.packType,
         userId: req.user.id,
-      }, 
-    );
-    let myCredits= req.user.myCredits
-    if(req.body.packType==0){
-      myCredits+=10
-    }else if(req.body.packType==1){
-      myCredits+=20
-    }else if(req.body.packType==2){
-      myCredits+=100
-    }
-    console.log("mycrdeit",myCredits)
-    console.log("reqw.body",req.body)
-    await Models.userModel.update({
-       myCredits:myCredits
-    },{
-      where:{
-        id:req.user.id
+      },
+      );
+      let myCredits = req.user.myCredits
+      if (req.body.packType == 0) {
+        myCredits += 10
+      } else if (req.body.packType == 1) {
+        myCredits += 20
+      } else if (req.body.packType == 2) {
+        myCredits += 100
       }
-    })
+      console.log("mycrdeit", myCredits)
+      console.log("reqw.body", req.body)
+      await Models.userModel.update({
+        myCredits: myCredits
+      }, {
+        where: {
+          id: req.user.id
+        }
+      })
       // await Models.transactionsModel.create(objToSave);
       let userDetail = await Models.userModel.findOne({
         where: { id: req.user.id },
-        include:[{
-          model:Models.packBuyUser,
+        include: [{
+          model: Models.packBuyUser,
         }]
       });
-      return commonHelper.success(res, "Pack bought successfully",userDetail);
+      return commonHelper.success(res, "Pack bought successfully", userDetail);
     } catch (error) {
-        console.error("Error during grading:", error);
+      console.error("Error during grading:", error);
       return commonHelper.error(
         res,
         Response.error_msg.uplImgErr,
@@ -687,7 +687,7 @@ module.exports = {
       if (!imagePath) {
         return commonHelper.failed(res, "Image path is required");
       }
-      if(req.user&&req.user.myCredits<=0){
+      if (req.user && req.user.myCredits <= 0) {
         return commonHelper.failed(res, "You have no credits to save the card. Please buy pack to get more credits.");
       }
       const imageData = {
@@ -710,13 +710,13 @@ module.exports = {
         backOverall: Number(backOverall) || 0.0,
       };
       const savedData = await Models.userCardsModel.create(imageData);
-      let myCredits= req.user.myCredits
-      let leftCredits= myCredits-1
+      let myCredits = req.user.myCredits
+      let leftCredits = myCredits - 1
       await Models.userModel.update({
-        myCredits:leftCredits
-      },{
-        where:{
-          id:req.user.id
+        myCredits: leftCredits
+      }, {
+        where: {
+          id: req.user.id
         }
       })
       return commonHelper.success(
@@ -892,7 +892,7 @@ module.exports = {
       //     },
       //   },
       // });
-      console.log("reqw.query",req.query)
+      console.log("reqw.query", req.query)
       let response;
       if (req.query && req.query.collectionId) {
         response = await Models.userCardsModel.findAll({
@@ -900,8 +900,8 @@ module.exports = {
             collectionId: req.query.collectionId,
             userId: req.query.userId,
           },
-          include:[{
-            model:Models.userModel
+          include: [{
+            model: Models.userModel
           }]
         });
       } else {
@@ -909,8 +909,8 @@ module.exports = {
           where: {
             userId: req.query.userId,
           },
-           include:[{
-            model:Models.userModel
+          include: [{
+            model: Models.userModel
           }]
         });
       }
@@ -1004,19 +1004,19 @@ module.exports = {
           ],
         },
       });
-      let packBuyList=await Models.packBuyUser.findAll({
-        where:{
-          userId:req.query.userId,
-          packUsed:0,
+      let packBuyList = await Models.packBuyUser.findAll({
+        where: {
+          userId: req.query.userId,
+          packUsed: 0,
         },
-        raw:true,
+        raw: true,
       });
 
       response.friendsCount = friendsCount;
       response.isFollow = isFollow ? 1 : 0;
-      let objToSend={
-        response:response,
-        packBuyList:packBuyList,
+      let objToSend = {
+        response: response,
+        packBuyList: packBuyList,
       }
       return commonHelper.success(
         res,
@@ -1118,25 +1118,25 @@ module.exports = {
       );
     }
   },
-  followUnfollow:async(req,res)=>{
+  followUnfollow: async (req, res) => {
     try {
-        const { followingId } = req.body; // The user to be followed
+      const { followingId } = req.body; // The user to be followed
       const followerId = req.user.id; // The logged-in user
-     let isFollow;
+      let isFollow;
       // Check if already following
       let existingFollow = await Models.followingModel.findOne({
         where: { followerId, followingId },
       });
-      if(existingFollow){
+      if (existingFollow) {
         // Unfollow
         await Models.followingModel.destroy({
           where: { followerId, followingId },
         });
-        return commonHelper.success(res, "Unfollowed successfully",{isFollow:0});
-      }else{
+        return commonHelper.success(res, "Unfollowed successfully", { isFollow: 0 });
+      } else {
         // Follow
-        await Models.followingModel.create({ followerId, followingId ,isAccept:1});
-        return commonHelper.success(res, "Followed successfully",{isFollow:1});
+        await Models.followingModel.create({ followerId, followingId, isAccept: 1 });
+        return commonHelper.success(res, "Followed successfully", { isFollow: 1 });
       }
     } catch (error) {
       console.log("error", error);
@@ -1147,51 +1147,51 @@ module.exports = {
       );
     }
   },
-  acceptReject:async(req,res)=>{
-   try {
+  acceptReject: async (req, res) => {
+    try {
       const { followerId, action } = req.body; // The user who sent the follow request
       const followingId = req.user.id; // The logged-in user
-      if(action==1){
+      if (action == 1) {
         // Accept follow request
         await Models.followingModel.update(
           { isAccept: 1 },
           { where: { followerId, followingId } }
         );
         return commonHelper.success(res, "Follow request accepted");
-      }else if(action==2){
+      } else if (action == 2) {
         // Reject follow request
         await Models.followingModel.destroy({
           where: { followerId, followingId },
         });
         return commonHelper.success(res, "Follow request rejected");
       }
-   } catch (error) {
+    } catch (error) {
       console.log("error", error);
       return commonHelper.error(
         res,
         Response.error_msg.internalServerError,
         error.message
       );
-   } 
+    }
   },
-  limitedBorder:async(req,res)=>{
+  limitedBorder: async (req, res) => {
     try {
-        const { hasLimited } = req.body;
+      const { hasLimited } = req.body;
       await Models.userCardsModel.update(
         { hasLimited: hasLimited },
-        { where: { id:req.body.cardId } }
+        { where: { id: req.body.cardId } }
       );
-      let findInventry=await Models.inventroyModel.findOne({
-        where:{
-          userId:req.user.id,
-          isUsed:0
-        },raw:true
+      let findInventry = await Models.inventroyModel.findOne({
+        where: {
+          userId: req.user.id,
+          isUsed: 0
+        }, raw: true
       })
       await Models.inventroyModel.update({
-        isUsed:1
-      },{
-        where:{
-          id:findInventry.id
+        isUsed: 1
+      }, {
+        where: {
+          id: findInventry.id
         }
       })
       // await Models.packBuyUser.update({
@@ -1203,7 +1203,7 @@ module.exports = {
         where: { id: req.user.id },
         raw: true,
       });
-      return commonHelper.success(res, "User limit updated successfully",userDetail);
+      return commonHelper.success(res, "User limit updated successfully", userDetail);
     } catch (error) {
       console.log("error", error);
       return commonHelper.error(
@@ -1213,11 +1213,11 @@ module.exports = {
       );
     }
   },
-  addInventory:async(req,res)=>{
+  addInventory: async (req, res) => {
     try {
-      let objToSave={
-        userId:req.user.id,
-        name :"Limited Border",
+      let objToSave = {
+        userId: req.user.id,
+        name: "Limited Border",
       }
       await Models.inventroyModel.create(objToSave);
       return commonHelper.success(res, "Inventory added successfully");
@@ -1230,12 +1230,12 @@ module.exports = {
       );
     }
   },
-  getInventroyList:async(req,res)=>{
+  getInventroyList: async (req, res) => {
     try {
       let response = await Models.inventroyModel.findAll({
         where: {
           userId: req.user.id,
-          isUsed:0
+          isUsed: 0
         },
       });
       return commonHelper.success(
@@ -1251,6 +1251,74 @@ module.exports = {
         error.message
       );
     }
-  }
+  },
+
+
+
+  grade: async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Read the uploaded file
+      const fileBuffer = fs.readFileSync(req.file.path);
+
+      // Call Python grading API
+      const response = await axios.post(GRADER_API, fileBuffer, {
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        },
+        maxContentLength: 50 * 1024 * 1024
+      });
+
+      // Extract grade data
+      const gradeData = response.data;
+
+      // Save card info to database with grade
+      const cardInfo = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        grade: gradeData.grade,
+        condition: gradeData.condition,
+        quality_score: gradeData.quality_score,
+        issues: gradeData.issues,
+        recommendation: gradeData.recommendation,
+        explanation: gradeData.explanation,
+        timestamp: new Date(),
+        path: `/uploads/${req.file.filename}`
+      };
+
+      // Save to database (example - adjust for your DB)
+      // await CardGrade.create(cardInfo);
+
+      // Clean up uploaded file if you want to store it elsewhere
+      // fs.copyFileSync(req.file.path, `./cards/${req.file.filename}`);
+      // fs.unlinkSync(req.file.path);
+
+      res.json({
+        success: true,
+        grade: gradeData.grade,
+        condition: gradeData.condition,
+        quality_score: gradeData.quality_score,
+        issues: gradeData.issues,
+        recommendation: gradeData.recommendation,
+        message: `Card graded: ${gradeData.grade}/10 - ${gradeData.condition}`
+      });
+
+    } catch (error) {
+      console.error('Grading error:', error.message);
+
+      // Clean up file
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      res.status(500).json({
+        error: 'Failed to grade card',
+        details: error.message
+      });
+    }
+  },
 
 };
