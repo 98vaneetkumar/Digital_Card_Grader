@@ -24,7 +24,7 @@ module.exports=function(){
 
     router.post("/packBuy",authentication,controller.userController.packBuy)
 
-    router.post('/uploadAndGrade', authentication, controller.userController.uploadAndGrade);
+    router.post('/uploadAndGrade1', authentication, controller.userController.uploadAndGrade);
     router.post('/saveImageData', authentication, controller.userController.saveImageData);
     router.get('/usersCards', authentication, controller.userController.usersCards);
     router.post('/cardDetails', authentication, controller.userController.cardDetails);
@@ -48,7 +48,7 @@ module.exports=function(){
     router.get("/getInventroyList",authentication,controller.userController.getInventroyList )
 
 
-    router.post('/grade', controller.userController.grade);
+    router.post('/uploadAndGrade', authentication, controller.userController.grade);
 
 
 

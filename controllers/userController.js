@@ -1303,33 +1303,46 @@ grade: async (req, res) => {
       // fs.copyFileSync(req.file.path, `./cards/${req.file.filename}`);
       // fs.unlinkSync(req.file.path);
 
-      res.json({
-        success: true,
-        grade: gradeData.grade,
-        condition: gradeData.condition,
-        overall: gradeData.overall,
-        centering: gradeData.centering,
-        edges: gradeData.edges,
-        surface: gradeData.surface,
-        corners: gradeData.corners,
+      // res.json({
+      //   success: true,
+      //   grade: gradeData.grade,
+      //   condition: gradeData.condition,
+      //   overall: gradeData.overall,
+      //   centering: gradeData.centering,
+      //   edges: gradeData.edges,
+      //   surface: gradeData.surface,
+      //   corners: gradeData.corners,
+      //   pokemon: gradeData.pokemon,
+      //   issues: gradeData.issues,
+      //   recommendation: gradeData.recommendation,
+      //   message: `Card graded: ${gradeData.grade}/10 - ${gradeData.condition}`
+      // });
+
+      const result = {
+        scores: {
+          centering: parseFloat(gradeData.centering),
+          edges: parseFloat(gradeData.edges),
+          surface: parseFloat(gradeData.surface),
+          corners: parseFloat(gradeData.corners),
+          overall: parseFloat(gradeData.overall),
+        },
         pokemon: gradeData.pokemon,
-        issues: gradeData.issues,
-        recommendation: gradeData.recommendation,
-        message: `Card graded: ${gradeData.grade}/10 - ${gradeData.condition}`
-      });
+        savedPath: savedRelativePath,
+      };
+
+      return commonHelper.success(
+        res,
+        Response.success_msg.fetchSuccess,
+        result
+      );
 
     } catch (error) {
-      console.error('Grading error:', error.message);
-
-      // Clean up file
-      if (req.file) {
-        fs.unlinkSync(req.file.path);
-      }
-
-      res.status(error.response?.status || 500).json({
-        error: 'Failed to grade card',
-        details: error.response?.data || error.message
-      });
+      console.error("Error during grading:", error);
+      return commonHelper.error(
+        res,
+        Response.error_msg.uplImgErr,
+        error.message
+      );
     }
   },
 
